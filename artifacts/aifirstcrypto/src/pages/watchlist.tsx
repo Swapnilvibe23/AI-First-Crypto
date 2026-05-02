@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, Star, Search, Bell, Trash2, ArrowUpRight, ArrowDownRight, Briefcase, Plus, Pencil, Wallet } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
+import { SevenDayOutlook } from "@/components/seven-day-outlook";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useAlerts } from "@/hooks/use-alerts";
@@ -303,6 +304,9 @@ export default function Watchlist() {
                       </div>
                     </CardContent>
                   </Link>
+
+                  {/* 7-day outlook */}
+                  <SevenDayOutlook sparklinePrices={coin.sparkline_in_7d?.price} />
 
                   {/* Add / show holdings */}
                   <div className="px-6 pb-4 border-t border-border/50 pt-3">
