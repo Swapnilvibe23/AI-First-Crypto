@@ -142,6 +142,13 @@ function HeatMapLegend() {
 
 type ViewMode = "table" | "heatmap";
 
+const CLIENT_SORT_ORDERS = ["gain_desc", "gain_asc"] as const;
+type ClientSortOrder = (typeof CLIENT_SORT_ORDERS)[number];
+
+function isClientSort(order: string): order is ClientSortOrder {
+  return (CLIENT_SORT_ORDERS as readonly string[]).includes(order);
+}
+
 export default function Rates() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -149,21 +156,34 @@ export default function Rates() {
   const [perPage, setPerPage] = useState("50");
   const [view, setView] = useState<ViewMode>("table");
 
+  // For client-side sorts, always fetch by market cap so we have the full set
+  const apiOrder = isClientSort(order) ? "market_cap_desc" : order;
+
   const { data: coins, isLoading } = useGetCoins({
     page,
     per_page: parseInt(perPage),
-    order,
+    order: apiOrder,
   });
 
-  const filteredCoins = useMemo(
-    () =>
-      coins?.filter(
-        (c) =>
-          c.name.toLowerCase().includes(search.toLowerCase()) ||
-          c.symbol.toLowerCase().includes(search.toLowerCase())
-      ),
-    [coins, search]
-  );
+  const filteredCoins = useMemo(() => {
+    const filtered = coins?.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.symbol.toLowerCase().includes(search.toLowerCase())
+    );
+    if (!filtered) return filtered;
+    if (order === "gain_desc") {
+      return [...filtered].sort(
+        (a, b) => (b.price_change_percentage_24h ?? -Infinity) - (a.price_change_percentage_24h ?? -Infinity)
+      );
+    }
+    if (order === "gain_asc") {
+      return [...filtered].sort(
+        (a, b) => (a.price_change_percentage_24h ?? Infinity) - (b.price_change_percentage_24h ?? Infinity)
+      );
+    }
+    return filtered;
+  }, [coins, search, order]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-12">
@@ -188,8 +208,8 @@ export default function Rates() {
 
           {/* Sort + page size */}
           <div className="flex items-center gap-2">
-            <Select value={order} onValueChange={setOrder}>
-              <SelectTrigger className="w-[160px]">
+            <Select value={order} onValueChange={(v) => { setOrder(v); setPage(1); }}>
+              <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -197,6 +217,8 @@ export default function Rates() {
                 <SelectItem value="market_cap_asc">Lowest Market Cap</SelectItem>
                 <SelectItem value="volume_desc">Highest Volume</SelectItem>
                 <SelectItem value="volume_asc">Lowest Volume</SelectItem>
+                <SelectItem value="gain_desc">🟢 Biggest Gainers</SelectItem>
+                <SelectItem value="gain_asc">🔴 Biggest Losers</SelectItem>
               </SelectContent>
             </Select>
             <Select value={perPage} onValueChange={setPerPage}>
