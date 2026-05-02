@@ -1,0 +1,260 @@
+Build a mobile-first web app called AIFirstCrypto.
+
+Core product goal:
+Create a simple, fast, self-serve daily crypto dashboard for retail users coming from Instagram. This is NOT a bot trading platform, NOT a portfolio syncing tool, and NOT a complex trading terminal. The app must help users check crypto in 60 seconds with clean UX, clear summaries, and minimal clutter.
+
+Main positioning:
+“AIFirstCrypto helps users check live crypto rates, market sentiment, top movers, and plain-English daily context in one place.”
+
+Target audience:
+- Beginner to intermediate crypto users
+- Instagram-driven visitors
+- Users who want a daily crypto check, not advanced charting
+- Mobile-first audience
+- No login required for first use
+
+Primary UX principles:
+- Very clean and modern design
+- Fast loading
+- Mobile-first responsive UI
+- Minimal clutter
+- Easy to scan in under 60 seconds
+- No overwhelming technical indicators
+- No exchange login
+- No wallet connect
+- No live trading execution
+- No backtesting engine
+- No complicated onboarding
+
+Tech/build requirements:
+- Use a simple modern stack that runs well on Replit
+- Prefer Next.js or React with a clean component structure
+- Use Tailwind CSS for styling
+- Use server-side API routes or lightweight backend functions where needed
+- Organize code cleanly for a solo founder to maintain
+- Add clear comments in code
+- Make it easy to swap API providers later
+- Use environment variables for API URLs if needed
+- Optimize for easy deployment on Replit
+
+Data sources:
+Use free public crypto APIs only.
+Primary:
+- CoinGecko free/demo API for live prices, markets, trending, historical data, global market data
+Secondary:
+- Alternative.me Fear and Greed API for sentiment
+Optional future-ready abstraction:
+- Add a service layer so APIs can be replaced later without changing UI components
+
+Important:
+Do not use paid APIs.
+Do not build exchange integrations.
+Do not build bot trading execution.
+Do not build real money trading features.
+
+MVP pages:
+1. Home page
+2. Live Rates page
+3. Top Gainers / Losers page
+4. Fear & Greed page
+5. Coin Detail page
+6. Watchlist page
+7. Resources page
+
+Detailed feature requirements:
+
+1) Home page
+The homepage should be the main “daily crypto pulse” dashboard.
+Include:
+- Hero section with headline:
+  “Check crypto in 60 seconds”
+- Short subheadline explaining live rates, sentiment, and top movers
+- Global market snapshot cards:
+  - total market cap
+  - total volume
+  - BTC dominance
+  - active cryptocurrencies if available
+- Fear & Greed summary card
+- Top gainers preview
+- Top losers preview
+- Trending coins preview
+- “Today’s Market Summary” card in plain English
+- CTA buttons:
+  - View Live Rates
+  - View Top Movers
+  - Save Your Watchlist
+  - Explore Resources
+- Featured resources section near bottom for digital products, guides, templates, or link-in-bio offers
+- Footer with disclaimer:
+  “This platform is for educational and informational purposes only. Not financial advice.”
+
+2) Live Rates page
+Display a sortable and searchable crypto market table.
+Include columns such as:
+- Rank
+- Coin name
+- Symbol
+- Price
+- 24h %
+- Market cap
+- Volume
+- Optional sparkline mini chart if easy
+Features:
+- Search box
+- Sort by price, market cap, 24h change
+- Filter top 50 / top 100 if possible
+- Click a row to open the coin detail page
+
+3) Top Gainers / Losers page
+Split the page into:
+- Top gainers in 24h
+- Top losers in 24h
+Include:
+- Coin card or table format
+- Price
+- 24h %
+- Market cap
+- Quick add to watchlist button
+- Clean visual distinction between gainers and losers
+Do not overcomplicate this page.
+
+4) Fear & Greed page
+Build a dedicated sentiment page using Alternative.me API.
+Include:
+- Current Fear & Greed score
+- Label like Extreme Fear / Fear / Neutral / Greed / Extreme Greed
+- Timestamp of update
+- A simple sentiment explanation for beginners
+- Optional historical chart if easy to implement
+- Plain-English explanation:
+  “This index reflects market emotion, not a buy/sell signal by itself.”
+
+5) Coin Detail page
+When a user clicks a coin, show:
+- Coin name, symbol, logo
+- Current price
+- 24h / 7d changes if available
+- Market cap
+- Volume
+- Circulating supply if available
+- Short price chart for 7d or 30d
+- Plain-English AI-style summary generated from raw market data using deterministic template logic
+- Example summary:
+  “Bitcoin is up 3.2% in the last 24 hours, showing short-term strength. Volume remains elevated, suggesting active participation.”
+- Button to add/remove from watchlist
+- Link back to main dashboard
+Important:
+Do not use actual paid LLM APIs for summaries unless explicitly configured later.
+For now generate summaries with template-based logic from data conditions.
+
+6) Watchlist page
+Allow users to create a simple personal watchlist without requiring an account.
+Use local storage for MVP.
+Features:
+- Add/remove coins
+- Show live watchlist prices
+- Show 24h % changes
+- Show quick links to coin detail pages
+- Show empty state message if no watchlist yet
+- Mobile-friendly card layout
+
+7) Resources page
+This page should support future monetization and content distribution.
+Include:
+- Section for digital resources
+- Product cards or placeholder links for resources hosted on the main platform or linked from Instagram bio
+- Suggested product/resource types:
+  - Crypto tracker template
+  - Beginner watchlist template
+  - Fear and Greed guide
+  - Crypto journal
+  - Daily crypto checklist
+- Clear CTA buttons like:
+  - Get the template
+  - Download the guide
+  - Explore resources
+  - View in bio link
+This page should be easy to update later.
+
+Plain-English market summary logic:
+Build a reusable summary generator function that creates simple daily market commentary from data, such as:
+- If BTC dominance rises and altcoins underperform: say capital is flowing toward Bitcoin
+- If market cap and volume both rise: say market activity is increasing
+- If fear & greed is extreme fear: say sentiment is cautious
+- If top movers are unusually strong: say speculative activity is elevated
+Keep the language simple and beginner-friendly.
+
+Design requirements:
+- Modern clean crypto-finance aesthetic
+- Dark mode default preferred
+- Good spacing
+- Large readable typography
+- Smooth cards with rounded corners
+- Responsive layout for mobile and desktop
+- Sticky top nav on mobile if useful
+- Avoid visual noise
+- Do not copy Messari or TradingView style complexity
+- Make it feel simpler, cleaner, and more beginner-friendly
+
+Navigation:
+Top nav should include:
+- Home
+- Live Rates
+- Top Movers
+- Fear & Greed
+- Watchlist
+- Resources
+
+Optional nice-to-have features if easy:
+- “Share this snapshot” card image generator
+- Category filter such as AI coins, meme coins, DeFi if available through API tags
+- Small ticker bar for top coins
+- Last updated timestamp
+- Skeleton loading states
+- Error handling and empty states
+
+Code structure requirements:
+- Create reusable components
+- Separate API service layer from UI
+- Separate utility functions for formatting numbers, percentages, and summaries
+- Use clean file structure
+- Add comments for maintainability
+- Handle API failures gracefully
+- Add loading and fallback UI states
+
+Important product boundaries:
+Do NOT build:
+- exchange connections
+- bot execution
+- automated trading
+- portfolio syncing from wallets
+- advanced technical indicators
+- backtesting
+- futures trading
+- copy trading
+- complex authentication
+
+SEO/content structure:
+Even though SEO is not immediate priority, structure pages cleanly with:
+- good page titles
+- meta descriptions
+- semantic headings
+- clean URL paths
+Examples:
+- /rates
+- /top-movers
+- /fear-greed
+- /coin/bitcoin
+- /watchlist
+- /resources
+
+Final deliverable:
+Generate a polished MVP that feels production-ready for a solo founder launch.
+Prioritize:
+1. simplicity
+2. mobile UX
+3. fast daily usefulness
+4. easy maintenance
+5. future monetization through owned resources and Instagram link-in-bio traffic
+
+If needed, start by scaffolding the app, then implement the homepage first, then market data pages, then watchlist, then resources page.

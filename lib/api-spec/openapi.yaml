@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AIFirstCrypto API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: market
+    description: Global market data
+  - name: coins
+    description: Coin data and details
+  - name: sentiment
+    description: Fear and Greed sentiment data
 paths:
   /healthz:
     get:
@@ -24,6 +30,175 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /market/global:
+    get:
+      operationId: getGlobalMarket
+      tags: [market]
+      summary: Global market data
+      description: Total market cap, volume, BTC dominance, active coins
+      responses:
+        "200":
+          description: Global market snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalMarket"
+
+  /market/coins:
+    get:
+      operationId: getCoins
+      tags: [market]
+      summary: List coins with live prices
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 100
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: market_cap_desc
+      responses:
+        "200":
+          description: List of coins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Coin"
+
+  /market/trending:
+    get:
+      operationId: getTrending
+      tags: [market]
+      summary: Trending coins
+      description: Currently trending coins on CoinGecko
+      responses:
+        "200":
+          description: Trending coins list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendingCoin"
+
+  /market/top-movers:
+    get:
+      operationId: getTopMovers
+      tags: [market]
+      summary: Top gainers and losers
+      description: Top 10 gainers and top 10 losers in the last 24 hours
+      responses:
+        "200":
+          description: Top movers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopMovers"
+
+  /market/summary:
+    get:
+      operationId: getMarketSummary
+      tags: [market]
+      summary: Plain-English daily market summary
+      description: Computed summary text based on current market conditions
+      responses:
+        "200":
+          description: Market summary text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketSummary"
+
+  /coins/{id}:
+    get:
+      operationId: getCoinDetail
+      tags: [coins]
+      summary: Coin detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Coin detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoinDetail"
+
+  /coins/{id}/history:
+    get:
+      operationId: getCoinHistory
+      tags: [coins]
+      summary: Coin price history
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 7
+      responses:
+        "200":
+          description: Price history data points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PricePoint"
+
+  /sentiment/fear-greed:
+    get:
+      operationId: getFearGreed
+      tags: [sentiment]
+      summary: Current Fear and Greed index
+      responses:
+        "200":
+          description: Fear and Greed data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FearGreed"
+
+  /sentiment/fear-greed/history:
+    get:
+      operationId: getFearGreedHistory
+      tags: [sentiment]
+      summary: Historical Fear and Greed index
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Historical fear and greed data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FearGreedHistoryPoint"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +209,198 @@ components:
       required:
         - status
 
+    GlobalMarket:
+      type: object
+      properties:
+        total_market_cap_usd:
+          type: number
+        total_volume_usd:
+          type: number
+        btc_dominance:
+          type: number
+        active_cryptocurrencies:
+          type: integer
+        market_cap_change_percentage_24h:
+          type: number
+      required:
+        - total_market_cap_usd
+        - total_volume_usd
+        - btc_dominance
+        - active_cryptocurrencies
+        - market_cap_change_percentage_24h
+
+    Coin:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+        current_price:
+          type: number
+        market_cap:
+          type: number
+        market_cap_rank:
+          type: integer
+        total_volume:
+          type: number
+        price_change_percentage_24h:
+          type: number
+          nullable: true
+        sparkline_in_7d:
+          type: object
+          nullable: true
+          properties:
+            price:
+              type: array
+              items:
+                type: number
+      required:
+        - id
+        - symbol
+        - name
+        - image
+        - current_price
+        - market_cap
+        - market_cap_rank
+        - total_volume
+
+    TrendingCoin:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        symbol:
+          type: string
+        market_cap_rank:
+          type: integer
+          nullable: true
+        thumb:
+          type: string
+        price_btc:
+          type: number
+      required:
+        - id
+        - name
+        - symbol
+        - thumb
+
+    TopMovers:
+      type: object
+      properties:
+        gainers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Coin"
+        losers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Coin"
+      required:
+        - gainers
+        - losers
+
+    MarketSummary:
+      type: object
+      properties:
+        summary:
+          type: string
+        generated_at:
+          type: string
+      required:
+        - summary
+        - generated_at
+
+    CoinDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        name:
+          type: string
+        image:
+          type: string
+        current_price:
+          type: number
+        market_cap:
+          type: number
+        market_cap_rank:
+          type: integer
+        total_volume:
+          type: number
+        price_change_percentage_24h:
+          type: number
+          nullable: true
+        price_change_percentage_7d:
+          type: number
+          nullable: true
+        circulating_supply:
+          type: number
+          nullable: true
+        max_supply:
+          type: number
+          nullable: true
+        description:
+          type: string
+        ai_summary:
+          type: string
+      required:
+        - id
+        - symbol
+        - name
+        - image
+        - current_price
+        - market_cap
+        - market_cap_rank
+        - total_volume
+        - ai_summary
+
+    PricePoint:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        price:
+          type: number
+      required:
+        - timestamp
+        - price
+
+    FearGreed:
+      type: object
+      properties:
+        value:
+          type: integer
+        value_classification:
+          type: string
+        timestamp:
+          type: string
+        updated_at:
+          type: string
+      required:
+        - value
+        - value_classification
+        - timestamp
+        - updated_at
+
+    FearGreedHistoryPoint:
+      type: object
+      properties:
+        value:
+          type: integer
+        value_classification:
+          type: string
+        timestamp:
+          type: string
+      required:
+        - value
+        - value_classification
+        - timestamp
