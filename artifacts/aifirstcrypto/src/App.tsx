@@ -16,6 +16,10 @@ import Watchlist from "@/pages/watchlist";
 import Resources from "@/pages/resources";
 import Compare from "@/pages/compare";
 import DCA from "@/pages/dca";
+import Exchanges from "@/pages/exchanges";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import Disclaimer from "@/pages/disclaimer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +43,10 @@ function Router() {
         <Route path="/compare" component={Compare} />
         <Route path="/dca" component={DCA} />
         <Route path="/resources" component={Resources} />
+        <Route path="/exchanges" component={Exchanges} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/disclaimer" component={Disclaimer} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

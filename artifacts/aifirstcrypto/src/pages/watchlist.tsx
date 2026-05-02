@@ -3,7 +3,7 @@ import { useGetCoins } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
-import { TrendingUp, TrendingDown, Star, Search, Bell, Trash2, ArrowUpRight, ArrowDownRight, Briefcase, Plus, Pencil, Wallet } from "lucide-react";
+import { TrendingUp, TrendingDown, Star, Search, Bell, Trash2, ArrowUpRight, ArrowDownRight, Briefcase, Plus, Pencil, Wallet, Share2, Copy, Check, Twitter } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { SevenDayOutlook } from "@/components/seven-day-outlook";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +13,7 @@ import { useHoldings } from "@/hooks/use-holdings";
 import { HoldingDialog } from "@/components/holding-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function Watchlist() {
   const { watchlist, toggleCoin } = useWatchlist();
@@ -22,6 +23,7 @@ export default function Watchlist() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogCoinId, setDialogCoinId] = useState<string | null>(null);
   const [editingHoldingId, setEditingHoldingId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { data: coins, isLoading } = useGetCoins({
     page: 1,
@@ -230,10 +232,85 @@ export default function Watchlist() {
 
       {/* ── Watchlist Coins ─────────────────────────────────────── */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Star className="h-6 w-6 text-primary" />
-          Saved Coins
-        </h2>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Star className="h-6 w-6 text-primary" />
+            Saved Coins
+            {watchlistedCoins.length > 0 && (
+              <Badge variant="secondary">{watchlistedCoins.length} coin{watchlistedCoins.length !== 1 ? "s" : ""}</Badge>
+            )}
+          </h2>
+
+          {watchlistedCoins.length > 0 && (() => {
+            const coinList = watchlistedCoins.slice(0, 6).map(c => `$${c.symbol.toUpperCase()}`).join(" · ");
+            const caption = `👀 My crypto watchlist on AIFirstCrypto:\n\n${coinList}\n\nTracking live prices, alerts & market mood — all free, no login needed.\n\n🔗 AIFirstCrypto.com\n\n#crypto #bitcoin #cryptonews #investing #altcoins #cryptotrading #web3`;
+            const twitterText = `My crypto watchlist: ${watchlistedCoins.slice(0, 5).map(c => `$${c.symbol.toUpperCase()}`).join(" ")} 👀 Track prices free at AIFirstCrypto.com`;
+
+            function handleCopy() {
+              navigator.clipboard.writeText(caption).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              });
+            }
+
+            function handleNativeShare() {
+              if (navigator.share) {
+                navigator.share({ title: "My Crypto Watchlist", text: caption, url: "https://AIFirstCrypto.com" });
+              }
+            }
+
+            return (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 rounded-full">
+                    <Share2 className="h-4 w-4" />
+                    Share Watchlist
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4 space-y-3" align="end">
+                  <p className="text-sm font-semibold">Share your watchlist</p>
+
+                  {/* Instagram copy */}
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-muted-foreground font-medium">📸 Instagram caption</p>
+                    <div className="rounded-md bg-muted/50 border border-border p-2.5 text-xs text-muted-foreground whitespace-pre-line leading-relaxed max-h-36 overflow-y-auto">
+                      {caption}
+                    </div>
+                    <Button size="sm" className="w-full gap-2 rounded-full" onClick={handleCopy}>
+                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      {copied ? "Copied!" : "Copy caption"}
+                    </Button>
+                  </div>
+
+                  {/* Twitter */}
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Button variant="secondary" size="sm" className="w-full gap-2 rounded-full">
+                      <Twitter className="h-3.5 w-3.5" />
+                      Post on X / Twitter
+                    </Button>
+                  </a>
+
+                  {/* Native share */}
+                  {"share" in navigator && (
+                    <Button variant="ghost" size="sm" className="w-full gap-2 rounded-full" onClick={handleNativeShare}>
+                      <Share2 className="h-3.5 w-3.5" />
+                      More sharing options
+                    </Button>
+                  )}
+
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    Sharing drives traffic that keeps AIFirstCrypto free 🙏
+                  </p>
+                </PopoverContent>
+              </Popover>
+            );
+          })()}
+        </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

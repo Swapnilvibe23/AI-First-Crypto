@@ -13,10 +13,14 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 - `/rates` — Live sortable/searchable coin table (top 100) with sparklines + heatmap view
 - `/top-movers` — Top gainers & losers in 24h with Share Gainers / Share Losers buttons
 - `/fear-greed` — Dedicated Fear & Greed sentiment page with 30-day history chart
-- `/coin/:id` — Coin detail with 7-day/30-day chart, AI-style summary, Watchlist + Alert + Share buttons
-- `/watchlist` — Personal watchlist (localStorage), portfolio P&L tracker, price alert management
+- `/coin/:id` — Coin detail with 7-day/30-day chart, AI-style summary, Watchlist + Alert + Share + "Compare Exchanges" nudge
+- `/watchlist` — Personal watchlist (localStorage), portfolio P&L tracker, price alert management + Share Watchlist button
 - `/resources` — Glossary (71 terms, 6 categories, Term of the Day), resource cards
 - `/compare` — Overlay up to 3 coins on a normalised % chart with side-by-side metrics
+- `/exchanges` — Affiliate exchange comparison: Coinbase, Binance, Kraken, Gemini, Bybit, OKX (cards + comparison table + CTA)
+- `/privacy` — Privacy Policy (localStorage-only data, affiliate disclosure, Beehiiv newsletter)
+- `/terms` — Terms of Service (no financial advice, affiliate relationships, IP, limitation of liability)
+- `/disclaimer` — Full Disclaimer (risk warning, data accuracy, affiliate disclosure, tax notice)
 
 ## Stack
 
@@ -51,6 +55,19 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 - **Coin Detail** — `ShareCoinButton`: Instagram caption + Twitter/X intent + native share sheet. Dynamic emoji based on 24h direction.
 - **Top Movers** — `ShareMoversButton`: Share Gainers / Share Losers with top-5 list formatted for Instagram + truncated tweet for X.
 - **Home** — `ShareSnapshotButton`: Daily market snapshot (market cap, BTC dominance, Fear & Greed, top gainer/loser) for Instagram + tweet.
+- **Watchlist** — Share Watchlist button: lists saved coins ($BTC · $ETH …), Instagram caption + Twitter intent + native share.
+
+### Monetisation (Affiliate)
+- `/exchanges` page — exchange comparison with affiliate CTAs for Coinbase, Binance, Kraken, Gemini, Bybit, OKX
+- Replace `href` values in `exchanges.tsx` EXCHANGES array with real affiliate tracking URLs before launch
+- Contextual affiliate nudge on every `/coin/:id` page ("Ready to buy X? Compare exchanges →")
+- All affiliate links use `rel="noopener noreferrer sponsored"` and include clear disclosure text
+
+### Legal Pages
+- `/privacy` — covers localStorage-only data model, Beehiiv newsletter, CoinGecko, affiliate links
+- `/terms` — no-financial-advice, acceptable use, IP, limitation of liability
+- `/disclaimer` — risk warning, data accuracy, affiliate disclosure, tax notice
+- Footer: 4-column grid (brand · Tools · More · Legal) with links to all three legal pages + CoinGecko attribution
 
 ### Price Alerts
 - `use-alerts.ts` hook — localStorage-based, checks every 60s via `AlertChecker`
@@ -90,7 +107,7 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 artifacts/
   aifirstcrypto/       # React + Vite frontend (served at /)
     src/
-      pages/           # home, rates, top-movers, fear-greed, coin-detail, watchlist, resources, compare
+      pages/           # home, rates, top-movers, fear-greed, coin-detail, watchlist, resources, compare, dca, exchanges, privacy, terms, disclaimer
       components/      # layout, sparkline, share buttons, alert-checker, price-alert-dialog, newsletter-strip
       hooks/           # use-watchlist, use-alerts, use-holdings
       lib/             # format.ts utils

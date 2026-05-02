@@ -11,6 +11,7 @@ import {
   GitCompareArrows,
   Bell,
   Calculator,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/fear-greed", label: "Fear & Greed", icon: Wallet },
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/dca", label: "DCA Calc", icon: Calculator },
+    { href: "/exchanges", label: "Exchanges", icon: ArrowRightLeft },
     { href: "/watchlist", label: "Watchlist", icon: Star },
     { href: "/resources", label: "Resources", icon: BookOpen },
   ];
@@ -172,15 +174,93 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      <footer className="border-t border-border/50 py-8 text-center bg-muted/20">
-        <div className="container mx-auto px-4">
-          <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-            Disclaimer: The information provided on AIFirstCrypto is for educational purposes only
-            and does not constitute financial, investment, or trading advice. Crypto is highly volatile.
-            Do your own research before making any investment decisions.
-          </p>
-          <div className="mt-4 text-sm font-medium text-foreground">
-            &copy; {new Date().getFullYear()} AIFirstCrypto. All rights reserved.
+      <footer className="border-t border-border/50 pt-10 pb-8 bg-muted/20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          {/* Top row: brand + nav columns */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <Link href="/" className="flex items-center gap-2 mb-3">
+                <div className="bg-primary p-1.5 rounded-md">
+                  <Activity className="h-4 w-4 text-primary-foreground" />
+                </div>
+                <span className="font-bold tracking-tight text-foreground">AIFirstCrypto</span>
+              </Link>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Your daily crypto snapshot. Live prices, market sentiment, and clear signals — no noise.
+              </p>
+            </div>
+
+            {/* Tools */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Tools</p>
+              <ul className="space-y-2">
+                {[
+                  { href: "/rates", label: "Live Rates" },
+                  { href: "/top-movers", label: "Top Movers" },
+                  { href: "/fear-greed", label: "Fear & Greed" },
+                  { href: "/compare", label: "Compare" },
+                  { href: "/dca", label: "DCA Calculator" },
+                ].map(l => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* More */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">More</p>
+              <ul className="space-y-2">
+                {[
+                  { href: "/exchanges", label: "Exchanges" },
+                  { href: "/watchlist", label: "My Watchlist" },
+                  { href: "/resources", label: "Resources" },
+                ].map(l => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Legal</p>
+              <ul className="space-y-2">
+                {[
+                  { href: "/privacy", label: "Privacy Policy" },
+                  { href: "/terms", label: "Terms of Service" },
+                  { href: "/disclaimer", label: "Disclaimer" },
+                ].map(l => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Divider + bottom row */}
+          <div className="border-t border-border/40 pt-6 space-y-3">
+            <p className="text-[11px] text-muted-foreground leading-relaxed max-w-3xl">
+              <strong className="text-muted-foreground/80">Disclaimer:</strong> The information provided on AIFirstCrypto is for educational purposes only
+              and does not constitute financial, investment, or trading advice. Crypto is highly volatile — do your own research before making
+              any investment decisions. Some links on this site are affiliate links.{" "}
+              <Link href="/disclaimer" className="underline hover:text-foreground">Full disclaimer →</Link>
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Market data sourced from{" "}
+              <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">CoinGecko</a>.
+              {" "}&copy; {new Date().getFullYear()} AIFirstCrypto. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

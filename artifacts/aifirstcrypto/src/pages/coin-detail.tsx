@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
-import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle, ExternalLink, Zap } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
@@ -289,6 +289,30 @@ export default function CoinDetail() {
             <CardContent>
               <p className="text-sm leading-relaxed text-foreground/90">
                 {coin.ai_summary}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Affiliate nudge */}
+          <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-950/30 to-card">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Zap className="h-4 w-4 text-emerald-400" />
+                Ready to buy {coin.symbol?.toUpperCase()}?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Compare the best exchanges for buying {coin.name} — low fees, beginner-friendly options available.
+              </p>
+              <a href="/exchanges">
+                <Button className="w-full rounded-full bg-emerald-600 hover:bg-emerald-500 text-white gap-2 text-sm">
+                  Compare exchanges
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+              </a>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Not financial advice · Some links are affiliate links
               </p>
             </CardContent>
           </Card>
