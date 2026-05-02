@@ -7,7 +7,8 @@ import {
   Star, 
   BookOpen,
   Menu,
-  X
+  X,
+  GitCompareArrows
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/rates", label: "Live Rates", icon: LineChart },
     { href: "/top-movers", label: "Top Movers", icon: TrendingUp },
     { href: "/fear-greed", label: "Fear & Greed", icon: Wallet },
+    { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/watchlist", label: "Watchlist", icon: Star },
     { href: "/resources", label: "Resources", icon: BookOpen },
   ];
