@@ -15,6 +15,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip as ReTooltip } from "rech
 import { useMemo, useState } from "react";
 import { TickerStrip } from "@/components/ticker-strip";
 import { Reveal } from "@/components/reveal";
+import { AIVerdictCard } from "@/components/ai-verdict-card";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
 
@@ -602,6 +603,18 @@ export default function Home() {
             (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i
           )}
         />
+      )}
+
+      {/* AIFirst Signal — daily verdict card */}
+      {globalMarket && fearGreed && (
+        <Reveal>
+          <AIVerdictCard
+            fearGreedValue={fearGreed.value}
+            fearGreedLabel={fearGreed.value_classification}
+            marketChange24h={globalMarket.market_cap_change_percentage_24h}
+            btcDominance={globalMarket.btc_dominance}
+          />
+        </Reveal>
       )}
 
       {/* Coin of the Day */}
