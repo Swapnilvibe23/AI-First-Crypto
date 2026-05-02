@@ -1207,7 +1207,9 @@ export default function Resources() {
         <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
           We're constantly building new tools for retail investors. Let us know what would help you the most.
         </p>
-        <Button size="lg" className="rounded-full">Request a Resource</Button>
+        <a href="mailto:hello@aifirstcrypto.com?subject=Resource%20Request&body=Hi%2C%20I%27d%20love%20to%20see%20a%20resource%20about%3A" target="_blank" rel="noopener noreferrer">
+          <Button size="lg" className="rounded-full">Request a Resource</Button>
+        </a>
       </div>
     </div>
   );

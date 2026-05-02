@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Mail, X, ArrowRight } from "lucide-react";
 
-const BEEHIIV_EMBED_URL = "https://embeds.beehiiv.com/PLACEHOLDER_REPLACE_WITH_YOUR_EMBED_ID";
+const BEEHIIV_EMBED_URL = "https://aifirstcrypto.beehiiv.com/subscribe";
 
 export function NewsletterStrip() {
   const [dismissed, setDismissed] = useState(() => {

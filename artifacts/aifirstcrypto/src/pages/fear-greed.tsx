@@ -186,15 +186,23 @@ export default function FearGreed() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-bold text-red-500">Extreme Fear (0–25)</h3>
-              <p className="text-sm text-muted-foreground">Investors are overly worried. Prices are typically dropping. This can sometimes represent a buying opportunity for long-term investors.</p>
+              <p className="text-sm text-muted-foreground">Investors are overly worried. Prices are typically dropping. This can sometimes represent a buying opportunity for long-term investors, but the trend may continue down.</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-bold text-orange-500">Fear (26–45)</h3>
+              <p className="text-sm text-muted-foreground">More sellers than buyers. The market is nervous and cautious. Prices tend to be under pressure, and many investors are hesitant to make new moves.</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-bold text-yellow-500">Neutral (46–54)</h3>
-              <p className="text-sm text-muted-foreground">The market is indecisive. Neither buyers nor sellers are in full control.</p>
+              <p className="text-sm text-muted-foreground">The market is indecisive. Neither buyers nor sellers are in full control. A period of consolidation — watch for a clear breakout in either direction.</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-bold text-green-500">Greed (55–75)</h3>
+              <p className="text-sm text-muted-foreground">Buyers are gaining confidence and momentum is building. Prices often rise during this phase, but it's worth staying grounded and not chasing pumps.</p>
             </div>
             <div className="space-y-2">
               <h3 className="font-bold text-emerald-500">Extreme Greed (76–100)</h3>
-              <p className="text-sm text-muted-foreground">Investors are getting too greedy. The market might be due for a correction (price drop).</p>
+              <p className="text-sm text-muted-foreground">Investors are getting too greedy. Euphoria is in the air, but history shows the market is often due for a correction (price drop) at these levels.</p>
             </div>
             <div className="mt-4 p-4 bg-muted/50 rounded-lg text-sm italic border border-border/50">
               "Be fearful when others are greedy, and greedy when others are fearful." — Warren Buffett
