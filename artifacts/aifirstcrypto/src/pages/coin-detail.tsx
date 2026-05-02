@@ -8,6 +8,7 @@ import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format
 import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
+import { PriceAlertDialog } from "@/components/price-alert-dialog";
 import {
   AreaChart,
   Area,
@@ -111,7 +112,7 @@ export default function CoinDetail() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4 self-start md:self-auto">
+          <div className="flex items-center gap-3 self-start md:self-auto flex-wrap">
             <Button 
               size="lg"
               variant={isInWatchlist(coin.id) ? "secondary" : "default"}
@@ -119,8 +120,15 @@ export default function CoinDetail() {
               className="rounded-full shadow-lg"
             >
               <Star className={`mr-2 h-5 w-5 ${isInWatchlist(coin.id) ? "fill-current" : ""}`} />
-              {isInWatchlist(coin.id) ? "Remove from Watchlist" : "Add to Watchlist"}
+              {isInWatchlist(coin.id) ? "Watchlisted" : "Watchlist"}
             </Button>
+            <PriceAlertDialog
+              coinId={coin.id}
+              coinName={coin.name}
+              coinSymbol={coin.symbol}
+              coinImage={coin.image}
+              currentPrice={coin.current_price}
+            />
           </div>
         </div>
       </div>

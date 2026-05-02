@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import NotFound from "@/pages/not-found";
+import { AlertChecker } from "@/components/alert-checker";
 
 // Pages
 import Home from "@/pages/home";
@@ -47,6 +48,7 @@ function App() {
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
+        <AlertChecker />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
