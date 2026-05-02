@@ -1,0 +1,86 @@
+
+
+Canvas
+
+Creations
+
+
+
+/
+
+
+Improve app stability and fix data display issues
+
+
+
+Show previous messages
+
+3 messages & 3 actions
+
+Checkpoint made
+3 hours ago
+
+Worked for 3 minutes
+Free
+Will this help and add value (Next, I can add a "Source filter" to the news section so users can show articles from just one outlet (e.g. only Bitcoin Magazine or only The Block) — useful for users who prefer a specific publication. Would you like me to do that?)? Also will the News source upgrade update in real time from the news sources CoinTelegraph, Decrypt, Bitcoin Magazine, The Block?
+
+3 hours ago
+
+1 message & 1 action
+Which would you prefer to build next?
+
+I want beginner friendly safe platform so help me recommend the best option. Also if the news updates every 5 minutes we cannot position 60 seconds in the H1 tag?
+3 hours ago
+
+Worked for 21 seconds
+Free
+
+14 messages & 14 actions
+
+Checkpoint made
+3 hours ago
+
+Worked for 2 minutes
+Free
+sure go ahead
+
+3 hours ago
+
+1 message & 8 actions
+
+Checkpoint made
+3 hours ago
+
+Worked for 1 minute
+Free
+QA, regression Test all that you have built so far and ensure the app is production ready for deployment. After that give me a good to have checklist of things we can add or built without bloating the application
+
+2 hours ago
+
+19 messages & 102 actions
+
+Checkpoint made
+2 hours ago
+
+Worked for 6 minutes
+Free
+How will this add value to the users are you providing vibe solutions "Next, I can add the "Why did the market move today?" auto-generated explainer card to the home page — it already has all the data it needs (F&G + top movers + BTC dominance). Would you like me to do that?"
+
+21 minutes ago
+
+1 message & 1 action
+Which one do you recommend bare minimum from the high signal items. Please note we are not going to send in app notifications as this is a web app. I am going to drive engagement through 2 mediums Instagram traffic and converting traffic to email subscribers using Beehiv.
+
+7 minutes ago
+
+Planning OG meta tag implementation (10 seconds)
+Given Instagram → web app → Beehiiv as your funnel, the priority order is clear:
+
+1. OG Meta Tags — do this first, non-negotiable.
+Instagram traffic means your link lives in your bio, stories, and DMs. When someone taps it and it previews as a blank card with no title or image, you lose the click before they even arrive. A proper preview with the app name, a sharp one-line description, and an image is the difference between "looks legit" and "looks like a spam link." This directly protects the top of your funnel.
+
+2. Beehiiv newsletter sign-up prompt in the app — this is actually missing from the checklist but is your real priority.
+You're driving Instagram traffic to the app to convert them to email subscribers. Right now the app has no path to Beehiiv at all. A non-intrusive sign-up strip — "Get the daily crypto snapshot in your inbox" with a Beehiiv embed or link — is the actual conversion mechanism. Without it, the funnel has no bottom.
+
+3. PWA manifest — do after the above.
+Once someone discovers you through Instagram and likes the app, "Add to Home Screen" turns a one-time visitor into a daily habit. Daily habit users are your best newsletter converts and your best organic sharers back to Instagram.
