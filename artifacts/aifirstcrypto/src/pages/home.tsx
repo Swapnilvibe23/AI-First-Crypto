@@ -1,4 +1,4 @@
-import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews } from "@workspace/api-client-react";
+import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews, useGetCoinHistory, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LineChart, Line, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import { useMemo, useState } from "react";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
@@ -229,6 +230,129 @@ function ShareSnapshotButton(p: SnapshotShareProps) {
   );
 }
 
+// ── Coin of the Day ───────────────────────────────────────────────────────────
+
+function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }: {
+  coinId: string;
+  coinName: string;
+  coinSymbol: string;
+  coinThumb: string;
+  marketCapRank: number | null;
+}) {
+  const { data: history, isLoading } = useGetCoinHistory(coinId, { days: 7 }, {
+    query: { enabled: !!coinId, queryKey: getGetCoinHistoryQueryKey(coinId, { days: 7 }) },
+  });
+
+  const { chartData, change7d, isUp } = useMemo(() => {
+    if (!history || history.length < 2) return { chartData: [], change7d: 0, isUp: true };
+    const first = history[0].price;
+    const last = history[history.length - 1].price;
+    const change = ((last - first) / first) * 100;
+    // Downsample to ~40 points for a clean sparkline
+    const step = Math.max(1, Math.floor(history.length / 40));
+    const sampled = history.filter((_pt, i) => i % step === 0 || i === history.length - 1);
+    return {
+      chartData: sampled.map((pt) => ({ v: pt.price })),
+      change7d: change,
+      isUp: change >= 0,
+    };
+  }, [history]);
+
+  const lineColor = isUp ? "#10b981" : "#ef4444";
+
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border-2 p-6 bg-gradient-to-br ${
+      isUp
+        ? "border-amber-500/40 from-amber-500/10 via-card to-card"
+        : "border-rose-500/30 from-rose-500/8 via-card to-card"
+    } shadow-lg`}>
+      {/* Decorative glow */}
+      <div className={`absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none ${isUp ? "bg-amber-400" : "bg-rose-400"}`} />
+
+      {/* Badge */}
+      <div className="flex items-center gap-2 mb-5">
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+          🔥 Coin of the Day
+        </span>
+        <span className="text-xs text-muted-foreground">— Trending #1 on CoinGecko right now</span>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+        {/* Logo + identity */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="relative">
+            <img src={coinThumb} alt={coinName} className="w-16 h-16 rounded-full ring-4 ring-amber-500/30 shadow-lg" />
+            <span className="absolute -bottom-1 -right-1 text-lg leading-none">🥇</span>
+          </div>
+          <div>
+            <div className="text-2xl font-black tracking-tight">{coinSymbol.toUpperCase()}</div>
+            <div className="text-base text-muted-foreground font-medium">{coinName}</div>
+            {marketCapRank && (
+              <div className="mt-1">
+                <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                  Market Cap Rank #{marketCapRank}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sparkline */}
+        <div className="flex-1 w-full sm:w-auto min-w-0">
+          {isLoading ? (
+            <Skeleton className="h-20 w-full rounded-lg" />
+          ) : chartData.length > 2 ? (
+            <div className="h-20">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <ReTooltip
+                    content={() => null}
+                    cursor={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="v"
+                    stroke={lineColor}
+                    strokeWidth={2.5}
+                    dot={false}
+                    isAnimationActive={true}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : null}
+          <div className="text-xs text-muted-foreground text-center mt-1 font-medium">7-day price trend</div>
+        </div>
+
+        {/* Stats + CTA */}
+        <div className="flex flex-col gap-3 items-start sm:items-end flex-shrink-0">
+          {isLoading ? (
+            <Skeleton className="h-10 w-28 rounded-lg" />
+          ) : (
+            <div className="text-right">
+              <div className={`text-2xl font-black ${isUp ? "text-emerald-400" : "text-red-400"}`}>
+                {isUp ? "+" : ""}{change7d.toFixed(2)}%
+              </div>
+              <div className="text-xs text-muted-foreground font-medium">7-day return</div>
+            </div>
+          )}
+          <Link href={`/coin/${coinId}`}>
+            <Button className="rounded-full gap-2" variant={isUp ? "default" : "secondary"}>
+              See full analysis
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Footer note */}
+      <p className="text-[11px] text-muted-foreground/60 mt-5 leading-snug">
+        Updated every 2 minutes · Source: CoinGecko · Not financial advice
+      </p>
+    </div>
+  );
+}
+
 export default function Home() {
   const { data: globalMarket, isLoading: loadingMarket, error: errorMarket } = useGetGlobalMarket();
   const { data: marketSummary, isLoading: loadingSummary } = useGetMarketSummary();
@@ -296,6 +420,19 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Coin of the Day */}
+      {trendingCoins && trendingCoins.length > 0 ? (
+        <CoinOfTheDay
+          coinId={trendingCoins[0].id}
+          coinName={trendingCoins[0].name}
+          coinSymbol={trendingCoins[0].symbol}
+          coinThumb={trendingCoins[0].thumb}
+          marketCapRank={trendingCoins[0].market_cap_rank ?? null}
+        />
+      ) : loadingTrending ? (
+        <Skeleton className="h-48 w-full rounded-2xl" />
+      ) : null}
 
       {/* Global Market Overview */}
       {loadingMarket ? (
