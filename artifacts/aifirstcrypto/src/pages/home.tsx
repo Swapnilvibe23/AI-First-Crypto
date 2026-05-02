@@ -3,11 +3,62 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
-import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink } from "lucide-react";
+import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
+import { useMemo } from "react";
+
+// ── Top Signal helpers ────────────────────────────────────────────────────────
+
+const BULLISH_WORDS = [
+  "surge","soar","rally","gain","rise","rises","rose","high","record","bull",
+  "bullish","above","break","breaks","launch","adopt","adoption","approve",
+  "approves","approved","partnership","positive","growth","all-time","ath",
+  "milestone","inflow","buy","pump","rebound","recovery","upgrade","listing","added",
+];
+const BEARISH_WORDS = [
+  "crash","plunge","drop","drops","fall","falls","fell","decline","bear","bearish",
+  "below","ban","bans","banned","hack","hacked","exploit","fraud","scam","fear",
+  "sec","lawsuit","regulation","crackdown","loss","losses","collapse","sell",
+  "dump","low","warning","risk","delisted","delist","fine","penalty",
+];
+
+function scoreArticle(title: string) {
+  const lower = title.toLowerCase();
+  let b = 0, r = 0;
+  for (const w of BULLISH_WORDS) if (lower.includes(w)) b++;
+  for (const w of BEARISH_WORDS) if (lower.includes(w)) r++;
+  return { bullishHits: b, bearishHits: r, total: b + r };
+}
+
+// Known coins: [display symbol, ...title keywords to match]
+const COIN_MENTIONS: [string, string[]][] = [
+  ["BTC",  ["bitcoin", "btc"]],
+  ["ETH",  ["ethereum", "eth", "ether"]],
+  ["SOL",  ["solana", "sol"]],
+  ["XRP",  ["xrp", "ripple"]],
+  ["BNB",  ["bnb", "binance"]],
+  ["DOGE", ["dogecoin", "doge"]],
+  ["ADA",  ["cardano", "ada"]],
+  ["AVAX", ["avalanche", "avax"]],
+  ["DOT",  ["polkadot", "dot"]],
+  ["LINK", ["chainlink", "link"]],
+  ["MATIC",["polygon", "matic"]],
+  ["UNI",  ["uniswap", "uni"]],
+  ["LTC",  ["litecoin", "ltc"]],
+  ["SHIB", ["shiba", "shib"]],
+  ["STABLECOIN", ["stablecoin", "usdt", "usdc", "tether"]],
+];
+
+function detectCoins(title: string): string[] {
+  const lower = title.toLowerCase();
+  return COIN_MENTIONS
+    .filter(([, keywords]) => keywords.some(k => lower.includes(k)))
+    .map(([symbol]) => symbol);
+}
 
 function DashboardSkeletons() {
   return (
@@ -31,7 +82,26 @@ export default function Home() {
   const { data: trendingCoins, isLoading: loadingTrending } = useGetTrending();
   const { data: topMovers, isLoading: loadingMovers } = useGetTopMovers();
   const { data: fearGreed, isLoading: loadingFearGreed } = useGetFearGreed();
-  const { data: news, isLoading: loadingNews } = useGetNews({ limit: 12 });
+  const { data: news, isLoading: loadingNews } = useGetNews({ limit: 20 });
+
+  // Compute the highest-impact story from today's news feed
+  const topSignal = useMemo(() => {
+    if (!news || news.length === 0) return null;
+    let best: (typeof news[0] & { score: number; coins: string[] }) | null = null;
+    for (const item of news) {
+      const { total, bullishHits, bearishHits } = scoreArticle(item.title);
+      // Only surface non-neutral stories; require at least 1 keyword hit
+      if (total === 0) continue;
+      if (!best || total > best.score) {
+        best = {
+          ...item,
+          score: total,
+          coins: detectCoins(item.title),
+        };
+      }
+    }
+    return best;
+  }, [news]);
 
   if (errorMarket) {
     return (
@@ -273,6 +343,71 @@ export default function Home() {
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-muted-foreground" />Neutral</span>
               </div>
             </div>
+
+            {/* ── Today's Top Signal ─────────────────────────────── */}
+            {loadingNews ? (
+              <Skeleton className="h-28 w-full rounded-xl" />
+            ) : topSignal ? (() => {
+              const isBullish = topSignal.sentiment === "bullish";
+              const isBearish = topSignal.sentiment === "bearish";
+              const borderColor = isBullish ? "border-positive/60" : isBearish ? "border-negative/60" : "border-primary/40";
+              const bgColor = isBullish ? "from-positive/10 to-card" : isBearish ? "from-negative/10 to-card" : "from-primary/5 to-card";
+              const badgeColor = isBullish ? "bg-positive/20 text-positive border-positive/30" : isBearish ? "bg-negative/20 text-negative border-negative/30" : "bg-primary/10 text-primary border-primary/20";
+              const SignalIcon = isBullish ? TrendingUp : isBearish ? TrendingDown : Zap;
+              const timeAgo = topSignal.pubDate
+                ? (() => {
+                    const diff = Date.now() - new Date(topSignal.pubDate).getTime();
+                    const h = Math.floor(diff / 3_600_000);
+                    const m = Math.floor(diff / 60_000);
+                    if (h >= 24) return `${Math.floor(h / 24)}d ago`;
+                    if (h >= 1) return `${h}h ago`;
+                    return `${m}m ago`;
+                  })()
+                : "";
+              return (
+                <a
+                  href={topSignal.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`group block rounded-xl border-2 ${borderColor} bg-gradient-to-r ${bgColor} p-5 hover:shadow-lg transition-all duration-200`}
+                >
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${badgeColor} uppercase tracking-wide`}>
+                        <Zap className="h-3 w-3" />
+                        Today's Top Signal
+                      </div>
+                      <div className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${badgeColor}`}>
+                        <SignalIcon className="h-3 w-3" />
+                        {topSignal.sentiment}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {topSignal.coins.slice(0, 4).map(sym => (
+                        <Badge key={sym} variant="outline" className="text-xs font-bold px-2 py-0.5 border-border/60">
+                          {sym}
+                        </Badge>
+                      ))}
+                      {topSignal.coins.length === 0 && (
+                        <Badge variant="outline" className="text-xs text-muted-foreground border-border/40">Crypto Market</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-base font-semibold leading-snug group-hover:text-primary transition-colors">
+                    {topSignal.title}
+                  </p>
+
+                  <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="font-medium">{topSignal.source}</span>
+                    {timeAgo && <><span className="text-muted-foreground/40">·</span><span>{timeAgo}</span></>}
+                    <span className="text-muted-foreground/40">·</span>
+                    <span>{topSignal.score} signal keyword{topSignal.score !== 1 ? "s" : ""} detected</span>
+                    <ExternalLink className="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </a>
+              );
+            })() : null}
 
             {loadingNews ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
