@@ -9,7 +9,10 @@ import {
 import {
   TrendingUp, TrendingDown, Calculator, Info,
   DollarSign, Coins, CalendarDays, BarChart2,
+  Share2, Copy, Check, Twitter, Instagram,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { formatPrice, formatCompactNumber, formatPercentage } from "@/lib/format";
 import type { PricePoint, Coin } from "@workspace/api-client-react";
 
@@ -45,6 +48,217 @@ interface DCAResult {
   currentPrice: number;
   bestBuy: Purchase;
   worstBuy: Purchase;
+}
+
+// ─── Share helpers ────────────────────────────────────────────────────────────
+
+const SITE_URL = "AIFirstCrypto.com";
+
+function roiEmoji(roi: number) {
+  if (roi >= 100) return "🚀";
+  if (roi >= 20)  return "📈";
+  if (roi >= 0)   return "✅";
+  if (roi >= -20) return "📉";
+  return "🔻";
+}
+
+function freqLabel(f: Frequency) {
+  return f === "weekly" ? "weekly" : f === "biweekly" ? "bi-weekly" : "monthly";
+}
+
+function buildDCAInstagram(
+  coinName: string,
+  coinSymbol: string,
+  amountNum: number,
+  frequency: Frequency,
+  periodLabel: string,
+  result: DCAResult,
+): string {
+  const emoji = roiEmoji(result.roi);
+  const direction = result.roi >= 0 ? "up" : "down";
+  return [
+    `${emoji} My DCA Experiment: ${coinName} (${coinSymbol.toUpperCase()})`,
+    ``,
+    `📅 Strategy: ${freqLabel(frequency)} $${amountNum.toLocaleString()} for ${periodLabel}`,
+    `💰 Total invested: ${formatPrice(result.totalInvested)} across ${result.purchases.length} buys`,
+    `📊 Portfolio today: ${formatPrice(result.currentValue)}`,
+    `${result.roi >= 0 ? "📈" : "📉"} Return: ${result.roi >= 0 ? "+" : ""}${formatPrice(result.profitLoss)} (${formatPercentage(result.roi)})`,
+    `🎯 Avg buy price: ${formatPrice(result.avgBuyPrice)}`,
+    ``,
+    `DCA takes the emotion out of crypto — you keep buying through the volatility, ${direction} or ${direction === "up" ? "down" : "up"}.`,
+    ``,
+    `Run your own simulation at ${SITE_URL}/dca`,
+    ``,
+    `#crypto #${coinName.replace(/\s+/g, "").toLowerCase()} #${coinSymbol.toLowerCase()} #dca #dollarcostaveraginge #cryptoinvesting #hodl #bitcoin`,
+  ].join("\n");
+}
+
+function buildDCATwitter(
+  coinName: string,
+  coinSymbol: string,
+  amountNum: number,
+  frequency: Frequency,
+  periodLabel: string,
+  result: DCAResult,
+): string {
+  const emoji = roiEmoji(result.roi);
+  return [
+    `${emoji} I ran a DCA simulation: $${amountNum.toLocaleString()} into ${coinName} (${coinSymbol.toUpperCase()}) ${freqLabel(frequency)} for ${periodLabel}`,
+    ``,
+    `💰 Invested: ${formatPrice(result.totalInvested)}`,
+    `📊 Value today: ${formatPrice(result.currentValue)}`,
+    `${result.roi >= 0 ? "📈" : "📉"} ${formatPercentage(result.roi)} ROI | Avg buy: ${formatPrice(result.avgBuyPrice)}`,
+    ``,
+    `Run yours → ${SITE_URL}/dca`,
+    ``,
+    `#${coinSymbol.toLowerCase()} #dca #crypto`,
+  ].join("\n");
+}
+
+// ─── Share DCA Button ─────────────────────────────────────────────────────────
+
+function ShareDCAButton({
+  coinName,
+  coinSymbol,
+  amountNum,
+  frequency,
+  periodLabel,
+  result,
+}: {
+  coinName: string;
+  coinSymbol: string;
+  amountNum: number;
+  frequency: Frequency;
+  periodLabel: string;
+  result: DCAResult;
+}) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const canNativeShare = typeof navigator !== "undefined" && "share" in navigator;
+
+  function copyInstagram() {
+    const text = buildDCAInstagram(coinName, coinSymbol, amountNum, frequency, periodLabel, result);
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  function shareTwitter() {
+    const text = buildDCATwitter(coinName, coinSymbol, amountNum, frequency, periodLabel, result);
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+    setOpen(false);
+  }
+
+  function nativeShare() {
+    const text = buildDCATwitter(coinName, coinSymbol, amountNum, frequency, periodLabel, result);
+    navigator.share({
+      title: `My ${coinName} DCA result — ${formatPercentage(result.roi)}`,
+      text,
+      url: `https://${SITE_URL}/dca`,
+    }).catch(() => {});
+    setOpen(false);
+  }
+
+  const isProfit = result.roi >= 0;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 rounded-full">
+          <Share2 className="h-4 w-4" />
+          Share result
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent className="w-80 p-3" align="end" sideOffset={8}>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+          Share your DCA result
+        </p>
+
+        {/* Result preview pill */}
+        <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5 space-y-1">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">{coinName} · {periodLabel}</span>
+            <span className={`text-xs font-bold ${isProfit ? "text-emerald-400" : "text-red-400"}`}>
+              {roiEmoji(result.roi)} {formatPercentage(result.roi)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Invested {formatPrice(result.totalInvested)}</span>
+            <span className={isProfit ? "text-emerald-400" : "text-red-400"}>
+              → {formatPrice(result.currentValue)}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          {/* Instagram copy */}
+          <button
+            onClick={copyInstagram}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
+              copied
+                ? "bg-green-500/10 text-green-400 border border-green-500/30"
+                : "hover:bg-muted/60 border border-transparent"
+            }`}
+          >
+            {copied ? (
+              <Check className="h-4 w-4 flex-shrink-0 text-green-400" />
+            ) : (
+              <div className="h-4 w-4 flex-shrink-0 rounded-sm bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+                <Instagram className="h-2.5 w-2.5 text-white" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm leading-tight">
+                {copied ? "Copied!" : "Copy for Instagram"}
+              </div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+                {copied ? "Paste into your story or caption" : "Full caption + hashtags ready"}
+              </div>
+            </div>
+          </button>
+
+          {/* Twitter / X */}
+          <button
+            onClick={shareTwitter}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted/60 transition-colors text-left border border-transparent"
+          >
+            <div className="h-4 w-4 flex-shrink-0 rounded-sm bg-black flex items-center justify-center border border-border">
+              <Twitter className="h-2.5 w-2.5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm leading-tight">Share on X (Twitter)</div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">Opens a pre-filled post</div>
+            </div>
+            <Share2 className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          </button>
+
+          {/* Native share (mobile) */}
+          {canNativeShare && (
+            <button
+              onClick={nativeShare}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted/60 transition-colors text-left border border-transparent"
+            >
+              <Share2 className="h-4 w-4 flex-shrink-0 text-primary" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm leading-tight">More options…</div>
+                <div className="text-xs text-muted-foreground leading-tight mt-0.5">WhatsApp, Messages, etc.</div>
+              </div>
+            </button>
+          )}
+        </div>
+
+        <p className="text-[10px] text-muted-foreground mt-3 px-1 leading-snug">
+          Simulated results only — not financial advice.
+        </p>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 // ─── DCA Calculation ──────────────────────────────────────────────────────────
@@ -436,21 +650,33 @@ export default function DCA() {
           <Card>
             <CardHeader>
               <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div>
+                <div className="flex-1 min-w-0">
                   <CardTitle className="text-lg">Portfolio Value Over Time</CardTitle>
                   <CardDescription>
                     {selectedCoin?.name} DCA — ${amountNum.toLocaleString()} {frequency} for {PERIOD_OPTIONS.find(o => o.value === period)?.label}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-0.5 bg-primary inline-block rounded" />
-                    Portfolio value
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3 h-0.5 bg-muted-foreground/40 inline-block rounded border-dashed border-t" />
-                    Amount invested
-                  </span>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-0.5 bg-primary inline-block rounded" />
+                      Portfolio value
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-3 h-0.5 bg-muted-foreground/40 inline-block rounded border-dashed border-t" />
+                      Amount invested
+                    </span>
+                  </div>
+                  {selectedCoin && (
+                    <ShareDCAButton
+                      coinName={selectedCoin.name}
+                      coinSymbol={selectedCoin.symbol}
+                      amountNum={amountNum}
+                      frequency={frequency}
+                      periodLabel={PERIOD_OPTIONS.find(o => o.value === period)?.label ?? ""}
+                      result={result}
+                    />
+                  )}
                 </div>
               </div>
             </CardHeader>
