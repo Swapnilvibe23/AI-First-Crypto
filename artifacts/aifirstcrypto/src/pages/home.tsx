@@ -10,7 +10,7 @@ import { InfoTooltip } from "@/components/info-tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
 
@@ -85,6 +85,8 @@ export default function Home() {
   const { data: fearGreed, isLoading: loadingFearGreed } = useGetFearGreed();
   const { data: news, isLoading: loadingNews } = useGetNews({ limit: 20 });
 
+  const [coinFilter, setCoinFilter] = useState<string>("All");
+
   // Compute the highest-impact story from today's news feed
   const topSignal = useMemo(() => {
     if (!news || news.length === 0) return null;
@@ -123,10 +125,10 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-6 md:py-10 flex flex-col gap-4">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-          Check crypto in <span className="text-primary">60 seconds</span>
+          Your daily crypto <span className="text-primary">snapshot</span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-          The fastest way to get a pulse on the market. Clear signals, no noise.
+          Live prices, market sentiment, and the latest news — all in one place. Clear signals, no noise.
         </p>
         
         <div className="flex flex-wrap gap-3 mt-4">
@@ -339,7 +341,8 @@ export default function Home() {
 
           {/* News & Sentiment Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            {/* Header row */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Newspaper className="h-6 w-6 text-primary" />
                 Latest Crypto News
@@ -351,6 +354,41 @@ export default function Home() {
                 <InfoTooltip content="Sentiment is auto-detected by scanning article headlines for bullish keywords (rally, surge, gain…) and bearish keywords (crash, ban, hack…). Not financial advice." />
               </div>
             </div>
+
+            {/* ── Coin filter tabs ───────────────────────────────── */}
+            {!loadingNews && news && news.length > 0 && (() => {
+              // Build the list of coins that appear in today's news
+              const mentionedCoins = new Set<string>();
+              for (const item of news) {
+                for (const sym of detectCoins(item.title)) mentionedCoins.add(sym);
+              }
+              // Fixed priority order — only show tabs for coins that actually have articles
+              const PRIORITY = ["BTC", "ETH", "SOL", "XRP", "BNB", "DOGE", "ADA", "AVAX"];
+              const tabs = ["All", ...PRIORITY.filter(s => mentionedCoins.has(s))];
+              if (tabs.length <= 1) return null; // no coin-specific articles — skip tabs
+              return (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {tabs.map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setCoinFilter(tab)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                        coinFilter === tab
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-muted/50 text-muted-foreground border-border/50 hover:border-primary/40 hover:text-foreground"
+                      }`}
+                    >
+                      {tab === "All" ? "All News" : tab}
+                    </button>
+                  ))}
+                  {coinFilter !== "All" && (
+                    <span className="text-xs text-muted-foreground ml-1">
+                      — showing articles mentioning {coinFilter}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* ── Today's Top Signal ─────────────────────────────── */}
             {loadingNews ? (
@@ -423,9 +461,26 @@ export default function Home() {
                   <Skeleton key={i} className="h-28 w-full rounded-xl" />
                 ))}
               </div>
-            ) : news && news.length > 0 ? (
+            ) : news && news.length > 0 ? (() => {
+              const filteredNews = coinFilter === "All"
+                ? news
+                : news.filter(item => detectCoins(item.title).includes(coinFilter));
+              if (filteredNews.length === 0) {
+                return (
+                  <div className="text-center py-12 rounded-xl border border-dashed border-border/50 text-muted-foreground">
+                    <p className="font-medium">No {coinFilter} articles in today's headlines.</p>
+                    <button
+                      className="mt-2 text-sm text-primary hover:underline"
+                      onClick={() => setCoinFilter("All")}
+                    >
+                      Show all news
+                    </button>
+                  </div>
+                );
+              }
+              return (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {news.map((item, i) => {
+                {filteredNews.map((item, i) => {
                   const sentimentColor =
                     item.sentiment === "bullish"
                       ? "border-l-positive bg-positive-muted/20"
@@ -502,7 +557,8 @@ export default function Home() {
                   );
                 })}
               </div>
-            ) : null}
+              );
+            })() : null}
           </div>
         </>
       )}
