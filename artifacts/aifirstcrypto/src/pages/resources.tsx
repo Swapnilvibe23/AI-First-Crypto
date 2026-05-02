@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import {
   ExternalLink, FileText, BookOpen, CheckSquare, LineChart,
   Notebook, GraduationCap, ChevronDown, ChevronUp, Search, X,
-  Sparkles, Copy, Check, CalendarDays, Calculator,
+  Sparkles, Copy, Check, CalendarDays, Calculator, TrendingUp,
+  TrendingDown, Scale, AlertTriangle, Rocket, Frown, ShieldAlert,
+  Activity,
 } from "lucide-react";
 
 // ─── Glossary data ────────────────────────────────────────────────────────────
@@ -826,6 +828,201 @@ export default function Resources() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── AIFirst Signal Guide ─────────────────────────────────────────── */}
+      <div className="space-y-6" id="aifirst-signal">
+        {/* Heading */}
+        <div className="flex items-start gap-4">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Activity className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold">Understanding the AIFirst Signal</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              What the daily verdict means — and how to use it as a beginner.
+            </p>
+          </div>
+        </div>
+
+        {/* What is it */}
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/8 via-primary/3 to-transparent p-5 sm:p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold uppercase tracking-widest text-primary">What is the AIFirst Signal?</span>
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/90">
+            Every day, AIFirstCrypto analyses three live market signals and combines them into a single plain-English verdict. 
+            No charts to interpret. No jargon. Just one sentence telling you what the market feels like today — and a beginner tip for what to do about it.
+          </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            It's designed to replace the overwhelming noise of crypto Twitter and replace it with a single, trustworthy daily read.
+          </p>
+        </div>
+
+        {/* Signal Pills explained */}
+        <div className="space-y-3">
+          <h3 className="text-base font-bold">The 3 signals we use</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">😨</span>
+                <span className="text-sm font-bold">Fear &amp; Greed Index</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                A 0–100 score measuring overall market sentiment. 0 = extreme fear (everyone is panicking), 100 = extreme greed (everyone is euphoric). 
+                Historically, extreme fear = potential buying opportunity; extreme greed = potential time to be cautious.
+              </p>
+              <div className="flex gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 font-semibold border border-red-500/20">0–24 · Extreme Fear</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 font-semibold border border-orange-500/20">25–44 · Fear</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 font-semibold border border-yellow-500/20">45–54 · Neutral</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 font-semibold border border-green-500/20">55–74 · Greed</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/20">75–100 · Extreme Greed</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold">Market 24h Change</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The percentage change of the total crypto market cap over the last 24 hours. A strongly positive number means the whole market is rising; 
+                a strongly negative number means money is flowing out across the board. This tells us the direction — not just the mood.
+              </p>
+              <div className="flex gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 font-semibold border border-green-500/20">+3%+ · Strong rise</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 font-semibold border border-green-500/15">0–3% · Slight rise</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold border border-border/40">±0% · Flat</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 font-semibold border border-red-500/15">-5%+ · Sharp drop</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-card p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">👑</span>
+                <span className="text-sm font-bold">BTC Dominance</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Bitcoin's share of the total crypto market cap. When it rises above ~60%, investors are moving into Bitcoin and away from riskier altcoins — 
+                a risk-off signal. When it falls below ~45%, altcoins are gaining ground — typically a more risk-on, bullish environment.
+              </p>
+              <div className="flex gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 font-semibold border border-orange-500/20">60%+ · Risk-off, BTC dominates</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-semibold border border-blue-500/20">45–60% · Balanced</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 font-semibold border border-green-500/20">&lt;45% · Altcoin season</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Verdict cards */}
+        <div className="space-y-3">
+          <h3 className="text-base font-bold">The 6 possible verdicts</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              {
+                icon: Rocket,
+                label: "Market is Euphoric",
+                color: "text-purple-400",
+                bg: "bg-purple-500/10 border-purple-500/30",
+                iconBg: "bg-purple-500/15",
+                signals: "F&G ≥ 75 · Market ≥ +3%",
+                meaning: "Everyone is excited and prices are surging. Historically, this is when risk is highest — be very careful buying at the top.",
+                tip: "If you already hold, consider taking some profit. Never buy just because everyone is excited.",
+              },
+              {
+                icon: TrendingUp,
+                label: "Leaning Bullish",
+                color: "text-green-400",
+                bg: "bg-green-500/10 border-green-500/30",
+                iconBg: "bg-green-500/15",
+                signals: "F&G ≥ 45 · Market ≥ 0%",
+                meaning: "Sentiment is positive and the market is rising. A reasonable environment to continue a DCA plan, but not to take on excessive risk.",
+                tip: "Stick to your plan. Don't over-invest just because the market feels good — it can turn quickly.",
+              },
+              {
+                icon: Scale,
+                label: "Mixed Signals",
+                color: "text-blue-400",
+                bg: "bg-blue-500/10 border-blue-500/30",
+                iconBg: "bg-blue-500/15",
+                signals: "F&G 40–54 · Market ±1.5%",
+                meaning: "No clear direction today. The market is balanced and indecisive. These days are common — they're not a signal to act.",
+                tip: "Use quiet days to research, not react. Review your existing positions calmly.",
+              },
+              {
+                icon: AlertTriangle,
+                label: "Proceed with Caution",
+                color: "text-yellow-400",
+                bg: "bg-yellow-500/10 border-yellow-500/30",
+                iconBg: "bg-yellow-500/15",
+                signals: "F&G < 45 · Market slightly negative",
+                meaning: "Sentiment is nervous and the market is under mild pressure. Not a crisis — but not a time to be impulsive either.",
+                tip: "Wait for clearer signals before making new purchases. Hold positions if your conviction hasn't changed.",
+              },
+              {
+                icon: Frown,
+                label: "Market is Fearful",
+                color: "text-orange-400",
+                bg: "bg-orange-500/10 border-orange-500/30",
+                iconBg: "bg-orange-500/15",
+                signals: "F&G ≤ 35 · Market < −1%",
+                meaning: "Significant fear is in the market and prices are falling. Historically, sustained fear periods end with opportunity — but we may not be at the bottom yet.",
+                tip: "Don't panic-sell. If you were planning a DCA purchase, this might be a good entry — but only invest what you're comfortable losing.",
+              },
+              {
+                icon: ShieldAlert,
+                label: "Extreme Fear",
+                color: "text-red-400",
+                bg: "bg-red-500/10 border-red-500/30",
+                iconBg: "bg-red-500/15",
+                signals: "F&G ≤ 20 or Market ≤ −5%",
+                meaning: "Maximum fear. Panic selling is happening. This is uncomfortable — but historically, extreme fear marks the best long-term buying opportunities.",
+                tip: "Stay calm. Do not make emotional decisions. If you have spare capital you planned to invest, extreme fear has historically been the best time — in small amounts.",
+              },
+            ].map((v) => {
+              const Icon = v.icon;
+              return (
+                <div key={v.label} className={`rounded-xl border p-4 space-y-3 ${v.bg}`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${v.iconBg}`}>
+                      <Icon className={`h-4 w-4 ${v.color}`} />
+                    </div>
+                    <div>
+                      <p className={`text-sm font-bold ${v.color}`}>{v.label}</p>
+                      <p className="text-[10px] text-muted-foreground font-mono">{v.signals}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{v.meaning}</p>
+                  <div className="rounded-lg bg-background/40 border border-border/30 p-2.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Beginner tip</p>
+                    <p className="text-xs text-foreground/70 leading-relaxed">{v.tip}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Important disclaimer */}
+        <div className="rounded-xl border border-border/40 bg-muted/30 p-4 flex gap-3 items-start">
+          <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            <span className="font-semibold text-foreground">The AIFirst Signal is not financial advice.</span>{" "}
+            It is an educational tool designed to help beginners understand what market sentiment looks like today. 
+            Always do your own research before investing, only invest money you can afford to lose, and consider consulting a financial adviser for personal guidance.
+          </p>
+        </div>
+
+        {/* CTA to home */}
+        <div className="text-center">
+          <Link href="/">
+            <Button variant="outline" className="rounded-full gap-2">
+              <Activity className="h-4 w-4" />
+              View today's AIFirst Signal
+            </Button>
+          </Link>
+        </div>
+      </div>
 
       {/* ── Glossary ─────────────────────────────────────────────────────── */}
       <div className="space-y-6" id="glossary">

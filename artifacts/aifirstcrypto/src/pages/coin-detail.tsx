@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
-import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle, ExternalLink, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle, ExternalLink, Zap, Sparkles } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { PriceAlertDialog } from "@/components/price-alert-dialog";
 import { ShareCoinButton } from "@/components/share-coin-button";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
+import { getCoinDescription } from "@/data/coin-descriptions";
 import {
   AreaChart,
   Area,
@@ -35,6 +37,19 @@ export default function CoinDetail() {
 
   const { data: history, isLoading: loadingHistory } = useGetCoinHistory(id, { days }, {
     query: { enabled: !!id, queryKey: getGetCoinHistoryQueryKey(id, { days }) }
+  });
+
+  const plainDesc = coin ? getCoinDescription(coin.id) : null;
+
+  useSeoMeta({
+    title: coin
+      ? `${coin.name} (${coin.symbol?.toUpperCase()}) Price — AIFirstCrypto`
+      : "Coin Detail — AIFirstCrypto",
+    description: coin
+      ? plainDesc
+        ? `${coin.name} (${coin.symbol?.toUpperCase()}) is ${plainDesc} Live price: ${formatPrice(coin.current_price)}. Track it free on AIFirstCrypto.`
+        : `Live ${coin.name} (${coin.symbol?.toUpperCase()}) price, chart, and market data. Rank #${coin.market_cap_rank}. Free beginner-friendly dashboard on AIFirstCrypto.`
+      : "Track live crypto prices, charts, and market data on AIFirstCrypto — free and beginner-friendly.",
   });
 
   if (errorCoin) {
@@ -142,6 +157,24 @@ export default function CoinDetail() {
           </div>
         </div>
       </div>
+
+      {/* Plain-English explainer */}
+      {plainDesc && (
+        <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/8 via-primary/4 to-transparent p-5">
+          <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-primary/8 blur-2xl pointer-events-none" />
+          <div className="flex items-start gap-3 relative">
+            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center mt-0.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary block mb-1">
+                Plain English
+              </span>
+              <p className="text-sm font-medium leading-relaxed text-foreground/90">{plainDesc}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
