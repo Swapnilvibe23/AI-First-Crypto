@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAlerts } from "@/hooks/use-alerts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { NewsletterStrip } from "@/components/newsletter-strip";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -162,6 +163,8 @@ export function Layout({ children }: LayoutProps) {
           </div>
         )}
       </header>
+
+      <NewsletterStrip />
 
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
         {children}
