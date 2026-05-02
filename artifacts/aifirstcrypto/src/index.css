@@ -228,3 +228,47 @@
   background-color: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
+
+/* ── Scroll reveal ─────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Live price ticker ─────────────────────────────────────────────────── */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 55s linear infinite;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Hero mesh grid overlay ────────────────────────────────────────────── */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── Card glow on hover ────────────────────────────────────────────────── */
+.card-glow {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card-glow:hover {
+  box-shadow: 0 0 0 1px hsl(210 100% 50% / 0.18),
+              0 8px 40px hsl(210 100% 50% / 0.07);
+  border-color: hsl(210 100% 50% / 0.35) !important;
+}

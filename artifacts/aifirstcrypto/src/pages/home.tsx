@@ -13,6 +13,8 @@ import { MarketDominanceChart } from "@/components/market-dominance-chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LineChart, Line, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import { useMemo, useState } from "react";
+import { TickerStrip } from "@/components/ticker-strip";
+import { Reveal } from "@/components/reveal";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
 
@@ -563,17 +565,25 @@ export default function Home() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       {/* Hero Section */}
-      <section className="py-6 md:py-10 flex flex-col gap-4">
+      <section className="relative py-10 md:py-16 flex flex-col gap-4 overflow-hidden">
+        {/* Background: mesh grid + glowing orbs */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[110px]" />
+          <div className="absolute -bottom-28 -left-28 w-96 h-96 rounded-full bg-indigo-500/7 blur-[90px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-blue-400/4 blur-[80px]" />
+          <div className="absolute inset-0 hero-grid" />
+        </div>
+
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
           Your daily crypto <span className="text-primary">snapshot</span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
           Live prices, market sentiment, and the latest news — all in one place. Clear signals, no noise.
         </p>
-        
+
         <div className="flex flex-wrap gap-3 mt-4">
           <Link href="/rates">
-            <Button size="lg" className="rounded-full font-bold">
+            <Button size="lg" className="rounded-full font-bold shadow-lg shadow-primary/20">
               View Live Rates <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
@@ -585,18 +595,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Coin of the Day */}
-      {trendingCoins && trendingCoins.length > 0 ? (
-        <CoinOfTheDay
-          coinId={trendingCoins[0].id}
-          coinName={trendingCoins[0].name}
-          coinSymbol={trendingCoins[0].symbol}
-          coinThumb={trendingCoins[0].thumb}
-          marketCapRank={trendingCoins[0].market_cap_rank ?? null}
+      {/* Live price ticker */}
+      {topMovers && (topMovers.gainers.length > 0 || topMovers.losers.length > 0) && (
+        <TickerStrip
+          items={[...topMovers.gainers, ...topMovers.losers].filter(
+            (c, i, arr) => arr.findIndex((x) => x.id === c.id) === i
+          )}
         />
-      ) : loadingTrending ? (
-        <Skeleton className="h-48 w-full rounded-2xl" />
-      ) : null}
+      )}
+
+      {/* Coin of the Day */}
+      <Reveal>
+        {trendingCoins && trendingCoins.length > 0 ? (
+          <CoinOfTheDay
+            coinId={trendingCoins[0].id}
+            coinName={trendingCoins[0].name}
+            coinSymbol={trendingCoins[0].symbol}
+            coinThumb={trendingCoins[0].thumb}
+            marketCapRank={trendingCoins[0].market_cap_rank ?? null}
+          />
+        ) : loadingTrending ? (
+          <Skeleton className="h-48 w-full rounded-2xl" />
+        ) : null}
+      </Reveal>
 
       {/* Global Market Overview */}
       {loadingMarket ? (
@@ -604,59 +625,61 @@ export default function Home() {
       ) : (
         <>
           {globalMarket && (
-            <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    Market Cap
-                    <InfoTooltip content="The total value of all cryptocurrencies combined, in US dollars. Tracks the overall size of the crypto market." />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${formatCompactNumber(globalMarket.total_market_cap_usd)}</div>
-                  <p className={`text-xs mt-1 flex items-center ${globalMarket.market_cap_change_percentage_24h >= 0 ? "text-positive" : "text-negative"}`}>
-                    {globalMarket.market_cap_change_percentage_24h >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                    {formatPercentage(globalMarket.market_cap_change_percentage_24h)} (24h)
-                  </p>
-                </CardContent>
-              </Card>
+            <Reveal>
+              <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-card/50 backdrop-blur-sm border-border/50 card-glow">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      Market Cap
+                      <InfoTooltip content="The total value of all cryptocurrencies combined, in US dollars. Tracks the overall size of the crypto market." />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">${formatCompactNumber(globalMarket.total_market_cap_usd)}</div>
+                    <p className={`text-xs mt-1 flex items-center ${globalMarket.market_cap_change_percentage_24h >= 0 ? "text-positive" : "text-negative"}`}>
+                      {globalMarket.market_cap_change_percentage_24h >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                      {formatPercentage(globalMarket.market_cap_change_percentage_24h)} (24h)
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    24h Volume
-                    <InfoTooltip content="The total dollar value of all crypto traded across every exchange in the last 24 hours. High volume = high activity." />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${formatCompactNumber(globalMarket.total_volume_usd)}</div>
-                </CardContent>
-              </Card>
+                <Card className="bg-card/50 backdrop-blur-sm border-border/50 card-glow">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      24h Volume
+                      <InfoTooltip content="The total dollar value of all crypto traded across every exchange in the last 24 hours. High volume = high activity." />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">${formatCompactNumber(globalMarket.total_volume_usd)}</div>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    BTC Dominance
-                    <InfoTooltip content="Bitcoin's share of the total crypto market cap. A rising number means more money is flowing into BTC vs. other coins (altcoins)." />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{globalMarket.btc_dominance.toFixed(1)}%</div>
-                </CardContent>
-              </Card>
+                <Card className="bg-card/50 backdrop-blur-sm border-border/50 card-glow">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      BTC Dominance
+                      <InfoTooltip content="Bitcoin's share of the total crypto market cap. A rising number means more money is flowing into BTC vs. other coins (altcoins)." />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{globalMarket.btc_dominance.toFixed(1)}%</div>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    Active Coins
-                    <InfoTooltip content="Total number of cryptocurrencies currently tracked across all exchanges globally." />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{globalMarket.active_cryptocurrencies.toLocaleString()}</div>
-                </CardContent>
-              </Card>
-            </section>
+                <Card className="bg-card/50 backdrop-blur-sm border-border/50 card-glow">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      Active Coins
+                      <InfoTooltip content="Total number of cryptocurrencies currently tracked across all exchanges globally." />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{globalMarket.active_cryptocurrencies.toLocaleString()}</div>
+                  </CardContent>
+                </Card>
+              </section>
+            </Reveal>
           )}
 
           {/* Market Mood Score */}
@@ -754,9 +777,10 @@ export default function Home() {
           </div>
 
           {/* Top Gainers + Top Losers */}
+          <Reveal>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {topMovers && topMovers.gainers.length > 0 && (
-              <Card>
+              <Card className="card-glow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-positive" />
@@ -792,7 +816,7 @@ export default function Home() {
             )}
 
             {topMovers && topMovers.losers.length > 0 && (
-              <Card>
+              <Card className="card-glow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <TrendingDown className="h-5 w-5 text-negative" />
@@ -827,6 +851,7 @@ export default function Home() {
               </Card>
             )}
           </div>
+          </Reveal>
 
           {/* What's Trending Now */}
           {(loadingTrending || (trendingCoins && trendingCoins.length > 0)) && (
@@ -863,7 +888,8 @@ export default function Home() {
                       <Link
                         key={coin.id}
                         href={`/coin/${coin.id}`}
-                        className={`group relative flex flex-col items-center gap-2 rounded-xl border bg-gradient-to-b ${rankStyle} p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer`}
+                        className={`group relative flex flex-col items-center gap-2 rounded-xl border bg-gradient-to-b ${rankStyle} p-4 text-center hover:scale-105 hover:shadow-xl hover:border-primary/40 transition-all duration-200 cursor-pointer animate-in fade-in-0 slide-in-from-bottom-4 fill-mode-both`}
+                        style={{ animationDelay: `${idx * 65}ms`, animationDuration: "480ms" }}
                       >
                         {/* Rank badge */}
                         <div className="absolute top-2.5 right-2.5 text-xs font-bold text-muted-foreground leading-none">
@@ -911,6 +937,7 @@ export default function Home() {
           )}
 
           {/* News & Sentiment Section */}
+          <Reveal>
           <div className="space-y-4">
             {/* Header row */}
             <div className="flex items-center justify-between flex-wrap gap-3">
@@ -1131,6 +1158,7 @@ export default function Home() {
               );
             })() : null}
           </div>
+          </Reveal>
         </>
       )}
     </div>
