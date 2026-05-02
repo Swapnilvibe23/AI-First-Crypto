@@ -8,10 +8,13 @@ import {
   BookOpen,
   Menu,
   X,
-  GitCompareArrows
+  GitCompareArrows,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAlerts } from "@/hooks/use-alerts";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,6 +23,8 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { alerts } = useAlerts();
+  const alertCount = alerts.length;
 
   const links = [
     { href: "/", label: "Home", icon: Activity },
@@ -35,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background text-foreground dark">
-      {/* Sticky Mobile Nav */}
+      {/* Sticky Nav */}
       <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
@@ -49,51 +54,107 @@ export function Layout({ children }: LayoutProps) {
           <nav className="hidden md:flex items-center gap-6">
             {links.map((link) => {
               const isActive = location === link.href;
+              const isWatchlist = link.href === "/watchlist";
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                  className={`relative text-sm font-medium transition-colors hover:text-primary inline-flex items-center gap-1.5 ${
                     isActive ? "text-primary" : "text-muted-foreground"
                   }`}
                 >
                   {link.label}
+                  {isWatchlist && alertCount > 0 && (
+                    <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 text-[10px] font-bold bg-red-500 text-white rounded-full leading-none">
+                      {alertCount > 9 ? "9+" : alertCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Mobile Menu Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </Button>
+          {/* Right side: Bell icon + mobile hamburger */}
+          <div className="flex items-center gap-1">
+            {/* Alert bell — always visible, disappears when 0 alerts */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/watchlist">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-9 w-9"
+                    onClick={closeMenu}
+                    aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
+                  >
+                    <Bell
+                      className={`h-4.5 w-4.5 transition-colors ${
+                        alertCount > 0
+                          ? "text-foreground"
+                          : "text-muted-foreground/50"
+                      }`}
+                    />
+                    {alertCount > 0 && (
+                      <>
+                        {/* Pulse ring */}
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
+                        {/* Solid dot / count */}
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
+                          {alertCount > 9 ? "" : alertCount}
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {alertCount > 0
+                  ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""} — tap to view`
+                  : "No active price alerts"}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Mobile Menu Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden h-9 w-9"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Nav Dropdown */}
         {isMenuOpen && (
           <div className="md:hidden border-b border-border/50 bg-background/95 backdrop-blur">
-            <nav className="flex flex-col p-4 space-y-4">
+            <nav className="flex flex-col p-4 space-y-1">
               {links.map((link) => {
                 const isActive = location === link.href;
+                const isWatchlist = link.href === "/watchlist";
                 const Icon = link.icon;
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     onClick={closeMenu}
-                    className={`flex items-center gap-3 text-sm font-medium p-2 rounded-md transition-colors ${
-                      isActive 
-                        ? "bg-primary/10 text-primary" 
+                    className={`flex items-center justify-between text-sm font-medium p-2.5 rounded-md transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
-                    {link.label}
+                    <span className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      {link.label}
+                    </span>
+                    {isWatchlist && alertCount > 0 && (
+                      <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full leading-none">
+                        {alertCount > 9 ? "9+" : alertCount}
+                        <Bell className="h-3 w-3 ml-0.5" />
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -109,8 +170,8 @@ export function Layout({ children }: LayoutProps) {
       <footer className="border-t border-border/50 py-8 text-center bg-muted/20">
         <div className="container mx-auto px-4">
           <p className="text-xs text-muted-foreground max-w-2xl mx-auto">
-            Disclaimer: The information provided on AIFirstCrypto is for educational purposes only 
-            and does not constitute financial, investment, or trading advice. Crypto is highly volatile. 
+            Disclaimer: The information provided on AIFirstCrypto is for educational purposes only
+            and does not constitute financial, investment, or trading advice. Crypto is highly volatile.
             Do your own research before making any investment decisions.
           </p>
           <div className="mt-4 text-sm font-medium text-foreground">
