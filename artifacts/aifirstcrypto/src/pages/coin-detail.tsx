@@ -10,6 +10,7 @@ import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { PriceAlertDialog } from "@/components/price-alert-dialog";
+import { ShareCoinButton } from "@/components/share-coin-button";
 import {
   AreaChart,
   Area,
@@ -130,6 +131,13 @@ export default function CoinDetail() {
               coinSymbol={coin.symbol}
               coinImage={coin.image}
               currentPrice={coin.current_price}
+            />
+            <ShareCoinButton
+              coinId={coin.id}
+              coinName={coin.name}
+              coinSymbol={coin.symbol}
+              currentPrice={coin.current_price}
+              change24h={coin.price_change_percentage_24h}
             />
           </div>
         </div>
