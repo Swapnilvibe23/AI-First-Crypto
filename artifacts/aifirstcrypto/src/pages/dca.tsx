@@ -9,8 +9,9 @@ import {
 import {
   TrendingUp, TrendingDown, Calculator, Info,
   DollarSign, Coins, CalendarDays, BarChart2,
-  Share2, Copy, Check, Twitter, Instagram,
+  Share2, Copy, Check, Twitter, Instagram, ImageIcon,
 } from "lucide-react";
+import { DCAStoryCard } from "@/components/dca-story-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatCompactNumber, formatPercentage } from "@/lib/format";
@@ -134,6 +135,7 @@ function ShareDCAButton({
 }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [storyCardOpen, setStoryCardOpen] = useState(false);
   const canNativeShare = typeof navigator !== "undefined" && "share" in navigator;
 
   function copyInstagram() {
@@ -167,6 +169,7 @@ function ShareDCAButton({
   const isProfit = result.roi >= 0;
 
   return (
+    <>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2 rounded-full">
@@ -253,11 +256,45 @@ function ShareDCAButton({
           )}
         </div>
 
+          {/* Story Card */}
+          <button
+            onClick={() => { setOpen(false); setStoryCardOpen(true); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted/60 transition-colors text-left border border-primary/20 bg-primary/5 mt-1"
+          >
+            <div className="h-4 w-4 flex-shrink-0 rounded-sm bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center">
+              <ImageIcon className="h-2.5 w-2.5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm leading-tight text-primary">Generate Story Card</div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+                Instagram Stories image · 1080×1920 · Download PNG
+              </div>
+            </div>
+            <span className="text-[10px] bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded-full flex-shrink-0">NEW</span>
+          </button>
+
         <p className="text-[10px] text-muted-foreground mt-3 px-1 leading-snug">
           Simulated results only — not financial advice.
         </p>
       </PopoverContent>
     </Popover>
+
+    <DCAStoryCard
+      open={storyCardOpen}
+      onClose={() => setStoryCardOpen(false)}
+      coinName={coinName}
+      coinSymbol={coinSymbol}
+      amountNum={amountNum}
+      frequency={frequency}
+      periodLabel={periodLabel}
+      totalInvested={result.totalInvested}
+      currentValue={result.currentValue}
+      profitLoss={result.profitLoss}
+      roi={result.roi}
+      avgBuyPrice={result.avgBuyPrice}
+      purchases={result.purchases.length}
+    />
+    </>
   );
 }
 
