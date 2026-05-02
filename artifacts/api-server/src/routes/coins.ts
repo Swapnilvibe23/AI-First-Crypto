@@ -10,7 +10,6 @@ import {
   GetCoinHistoryResponse,
 } from "@workspace/api-zod";
 import { fetchCoinDetail, fetchCoinHistory } from "../lib/coingecko";
-import { generateMarketSummary } from "../lib/summary";
 
 const router: IRouter = Router();
 
@@ -22,51 +21,55 @@ router.get("/coins/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const raw = await fetchCoinDetail(params.data.id);
-  const md = raw.market_data as Record<string, Record<string, number>> | undefined;
+  try {
+    const raw = await fetchCoinDetail(params.data.id);
+    const md = raw.market_data as Record<string, Record<string, number>> | undefined;
 
-  const currentPrice = (md?.current_price?.usd as number) ?? 0;
-  const marketCap = (md?.market_cap?.usd as number) ?? 0;
-  const totalVolume = (md?.total_volume?.usd as number) ?? 0;
-  const priceChange24h = (md?.price_change_percentage_24h as number | null) ?? null;
-  const priceChange7d = (md?.price_change_percentage_7d as number | null) ?? null;
-  const circulatingSupply = (md?.circulating_supply as number | null) ?? null;
-  const maxSupply = (md?.max_supply as number | null) ?? null;
-  const marketCapRank = (raw.market_cap_rank as number) ?? 0;
+    const currentPrice = (md?.current_price?.usd as unknown as number) ?? 0;
+    const marketCap = (md?.market_cap?.usd as unknown as number) ?? 0;
+    const totalVolume = (md?.total_volume?.usd as unknown as number) ?? 0;
+    const priceChange24h = (md?.price_change_percentage_24h as unknown as number | null) ?? null;
+    const priceChange7d = (md?.price_change_percentage_7d as unknown as number | null) ?? null;
+    const circulatingSupply = (md?.circulating_supply as unknown as number | null) ?? null;
+    const maxSupply = (md?.max_supply as unknown as number | null) ?? null;
+    const marketCapRank = (raw.market_cap_rank as number) ?? 0;
 
-  // Build a plain-English AI-style summary from template logic
-  const aiSummary = generateCoinSummary({
-    name: raw.name as string,
-    symbol: (raw.symbol as string).toUpperCase(),
-    priceChange24h,
-    priceChange7d,
-    totalVolume,
-    marketCap,
-  });
+    const aiSummary = generateCoinSummary({
+      name: raw.name as string,
+      symbol: (raw.symbol as string).toUpperCase(),
+      priceChange24h,
+      priceChange7d,
+      totalVolume,
+      marketCap,
+    });
 
-  const descriptionRaw = raw.description as Record<string, string> | undefined;
-  const description = descriptionRaw?.en
-    ? descriptionRaw.en.replace(/<[^>]*>/g, "").slice(0, 500)
-    : "";
+    const descriptionRaw = raw.description as Record<string, string> | undefined;
+    const description = descriptionRaw?.en
+      ? descriptionRaw.en.replace(/<[^>]*>/g, "").slice(0, 500)
+      : "";
 
-  const coin = {
-    id: raw.id as string,
-    symbol: raw.symbol as string,
-    name: raw.name as string,
-    image: (raw.image as Record<string, string>)?.large ?? "",
-    current_price: currentPrice,
-    market_cap: marketCap,
-    market_cap_rank: marketCapRank,
-    total_volume: totalVolume,
-    price_change_percentage_24h: priceChange24h,
-    price_change_percentage_7d: priceChange7d,
-    circulating_supply: circulatingSupply,
-    max_supply: maxSupply,
-    description,
-    ai_summary: aiSummary,
-  };
+    const coin = {
+      id: raw.id as string,
+      symbol: raw.symbol as string,
+      name: raw.name as string,
+      image: (raw.image as Record<string, string>)?.large ?? "",
+      current_price: currentPrice,
+      market_cap: marketCap,
+      market_cap_rank: marketCapRank,
+      total_volume: totalVolume,
+      price_change_percentage_24h: priceChange24h,
+      price_change_percentage_7d: priceChange7d,
+      circulating_supply: circulatingSupply,
+      max_supply: maxSupply,
+      description,
+      ai_summary: aiSummary,
+    };
 
-  res.json(GetCoinDetailResponse.parse(coin));
+    res.json(GetCoinDetailResponse.parse(coin));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch coin detail");
+    res.status(503).json({ error: "Coin data temporarily unavailable. CoinGecko may be rate limiting — please try again shortly." });
+  }
 });
 
 // GET /coins/:id/history?days=7
@@ -83,10 +86,14 @@ router.get("/coins/:id/history", async (req, res): Promise<void> => {
     return;
   }
 
-  const history = await fetchCoinHistory(idParsed.data.id, queryParsed.data.days);
-  const points = (history.prices ?? []).map(([timestamp, price]) => ({ timestamp, price }));
-
-  res.json(GetCoinHistoryResponse.parse(points));
+  try {
+    const history = await fetchCoinHistory(idParsed.data.id, queryParsed.data.days);
+    const points = (history.prices ?? []).map(([timestamp, price]) => ({ timestamp, price }));
+    res.json(GetCoinHistoryResponse.parse(points));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch coin history");
+    res.status(503).json({ error: "Price history temporarily unavailable. Please try again shortly." });
+  }
 });
 
 // Coin-specific plain-English summary
@@ -118,7 +125,6 @@ function generateCoinSummary(input: {
     parts.push(`Over the past week, it has ${dir7d} ${Math.abs(priceChange7d).toFixed(1)}%.`);
   }
 
-  // Volume commentary
   const volumeToMcapRatio = marketCap > 0 ? totalVolume / marketCap : 0;
   if (volumeToMcapRatio > 0.3) {
     parts.push("Volume is unusually elevated relative to market cap, suggesting very active participation.");

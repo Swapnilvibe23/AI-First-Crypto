@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useGetCoins, useGetCoinHistory } from "@workspace/api-client-react";
+import { useGetCoins, useGetCoinHistory, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,9 +60,9 @@ function CoinHistoryLine({
 }
 
 function useCoinHistories(coinIds: string[], days: number) {
-  const q0 = useGetCoinHistory(coinIds[0] ?? "", { days }, { query: { enabled: !!coinIds[0] } });
-  const q1 = useGetCoinHistory(coinIds[1] ?? "", { days }, { query: { enabled: !!coinIds[1] } });
-  const q2 = useGetCoinHistory(coinIds[2] ?? "", { days }, { query: { enabled: !!coinIds[2] } });
+  const q0 = useGetCoinHistory(coinIds[0] ?? "", { days }, { query: { enabled: !!coinIds[0], queryKey: getGetCoinHistoryQueryKey(coinIds[0] ?? "", { days }) } });
+  const q1 = useGetCoinHistory(coinIds[1] ?? "", { days }, { query: { enabled: !!coinIds[1], queryKey: getGetCoinHistoryQueryKey(coinIds[1] ?? "", { days }) } });
+  const q2 = useGetCoinHistory(coinIds[2] ?? "", { days }, { query: { enabled: !!coinIds[2], queryKey: getGetCoinHistoryQueryKey(coinIds[2] ?? "", { days }) } });
   return [q0, q1, q2];
 }
 

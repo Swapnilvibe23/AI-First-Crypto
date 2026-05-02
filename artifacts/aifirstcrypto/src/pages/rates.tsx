@@ -360,7 +360,7 @@ export default function Rates() {
                         <div className="w-24 ml-auto">
                           <Sparkline
                             data={coin.sparkline_in_7d?.price ?? []}
-                            positive={(coin.price_change_percentage_7d_in_currency ?? coin.price_change_percentage_24h ?? 0) >= 0}
+                            positive={(coin.price_change_percentage_24h ?? 0) >= 0}
                           />
                         </div>
                       </TableCell>
