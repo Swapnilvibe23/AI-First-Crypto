@@ -15,6 +15,7 @@ import CoinDetail from "@/pages/coin-detail";
 import Watchlist from "@/pages/watchlist";
 import Resources from "@/pages/resources";
 import Compare from "@/pages/compare";
+import DCA from "@/pages/dca";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/coin/:id" component={CoinDetail} />
         <Route path="/watchlist" component={Watchlist} />
         <Route path="/compare" component={Compare} />
+        <Route path="/dca" component={DCA} />
         <Route path="/resources" component={Resources} />
         <Route component={NotFound} />
       </Switch>

@@ -1,6 +1,6 @@
 export function formatPrice(price: number | undefined | null): string {
   if (price == null) return "$0.00";
-  if (price < 0.01) {
+  if (Math.abs(price) < 0.01 && price !== 0) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",

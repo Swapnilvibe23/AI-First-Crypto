@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
+import { Link } from "wouter";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   ExternalLink, FileText, BookOpen, CheckSquare, LineChart,
   Notebook, GraduationCap, ChevronDown, ChevronUp, Search, X,
-  Sparkles, Copy, Check, CalendarDays,
+  Sparkles, Copy, Check, CalendarDays, Calculator,
 } from "lucide-react";
 
 // ─── Glossary data ────────────────────────────────────────────────────────────
@@ -544,11 +546,57 @@ const TODAY_LABEL = new Date().toLocaleDateString("en-US", {
   weekday: "long", month: "long", day: "numeric",
 });
 
+// ─── Journal / Checklist dialog content ──────────────────────────────────────
+
+const DAILY_CHECKLIST = [
+  { emoji: "📊", step: "Check the Fear & Greed index", desc: "Is the market fearful or greedy today? Adjust your mindset accordingly." },
+  { emoji: "📈", step: "Glance at BTC dominance", desc: "Rising = risk-off, money moving to Bitcoin. Falling = altcoin season possible." },
+  { emoji: "🔥", step: "Review top movers", desc: "Are any coins you hold in the top gainers or losers? Investigate if so." },
+  { emoji: "📰", step: "Scan the news headlines", desc: "Any macro news (Fed, regulation, ETFs) that could affect the market today?" },
+  { emoji: "🧠", step: "Stick to your plan", desc: "Don't let FOMO or FUD change a strategy you built with a clear head." },
+];
+
+const JOURNAL_TEMPLATE = `📓 CRYPTO TRADING JOURNAL
+Date: _______________
+
+📌 MARKET CONDITIONS TODAY
+• BTC Price: $________  24h Change: _______%
+• Fear & Greed: ______ (label: _____________)
+• BTC Dominance: _______%
+• Overall mood: Bullish / Bearish / Neutral
+
+💸 TRADES TODAY
+Coin: _______ | Action: BUY / SELL | Amount: $_______ | Price: $_______
+Reason for trade: ________________________________________________
+_________________________________________________________________
+
+📊 MY PORTFOLIO
+• Total value: $_______  |  vs yesterday: _______%
+• Best performer: _______  |  Worst: _______
+
+🧠 LESSONS LEARNED TODAY
+1. _____________________________________________________________
+2. _____________________________________________________________
+
+🎯 TOMORROW'S PLAN
+• Watch: _______________________________________________________
+• If BTC drops below $_______ → ________________________________
+• If BTC rises above $_______ → _______________________________
+
+⚠️ EMOTIONAL CHECK
+Today I felt: Calm / Anxious / FOMO / Confident
+What drove it: ________________________________________________
+
+Remember: The plan you make with a clear head beats any decision made on emotion.`;
+
 export default function Resources() {
   const [expandedTerm, setExpandedTerm] = useState<string | null>(null);
   const [glossarySearch, setGlossarySearch] = useState("");
   const [glossaryCategory, setGlossaryCategory] = useState("All");
   const [copied, setCopied] = useState(false);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const [checklistOpen, setChecklistOpen] = useState(false);
+  const [journalCopied, setJournalCopied] = useState(false);
 
   const termOfTheDay = GLOSSARY[todayIndex()];
 
@@ -571,12 +619,69 @@ export default function Resources() {
     });
   }
 
-  const resources = [
-    { title: "Crypto Tracker Template", description: "A Google Sheets template to track your portfolio across different exchanges and wallets.", icon: LineChart, color: "text-blue-500", bg: "bg-blue-500/10", action: "Get Template" },
-    { title: "Beginner Watchlist Guide", description: "Curated list of the top 10 most foundational cryptocurrencies every beginner should know.", icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10", action: "Read Guide" },
-    { title: "Understanding Fear & Greed", description: "Deep dive into market psychology and how to use sentiment analysis in your strategy.", icon: BookOpen, color: "text-orange-500", bg: "bg-orange-500/10", action: "Read Article" },
-    { title: "Crypto Trading Journal", description: "Notion template to log your trades, decisions, and lessons learned.", icon: Notebook, color: "text-green-500", bg: "bg-green-500/10", action: "Get Template" },
-    { title: "Daily Crypto Checklist", description: "A 5-minute routine to check the market without getting overwhelmed.", icon: CheckSquare, color: "text-primary", bg: "bg-primary/10", action: "View Checklist" },
+  type ResourceItem = {
+    title: string;
+    description: string;
+    icon: React.ElementType;
+    color: string;
+    bg: string;
+    action: string;
+    type: "internal" | "external" | "dialog";
+    href?: string;
+    dialog?: "journal" | "checklist";
+  };
+
+  const resources: ResourceItem[] = [
+    {
+      title: "DCA Calculator",
+      description: "Simulate what consistent weekly or monthly buying would have returned on any coin over 1–3 years.",
+      icon: Calculator,
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      action: "Open Calculator",
+      type: "internal",
+      href: "/dca",
+    },
+    {
+      title: "Beginner Watchlist Guide",
+      description: "Curated list of the top foundational cryptocurrencies every beginner should know — live prices included.",
+      icon: FileText,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+      action: "View Watchlist",
+      type: "internal",
+      href: "/watchlist",
+    },
+    {
+      title: "Understanding Fear & Greed",
+      description: "Deep dive into market psychology and how to use sentiment analysis in your strategy.",
+      icon: BookOpen,
+      color: "text-orange-500",
+      bg: "bg-orange-500/10",
+      action: "Read Article",
+      type: "internal",
+      href: "/fear-greed",
+    },
+    {
+      title: "Crypto Trading Journal",
+      description: "A structured daily template to log your trades, decisions, and lessons learned — copy it in one click.",
+      icon: Notebook,
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+      action: "Get Template",
+      type: "dialog",
+      dialog: "journal",
+    },
+    {
+      title: "Daily Crypto Checklist",
+      description: "A 5-step morning routine to check the market clearly without getting overwhelmed.",
+      icon: CheckSquare,
+      color: "text-primary",
+      bg: "bg-primary/10",
+      action: "View Checklist",
+      type: "dialog",
+      dialog: "checklist",
+    },
   ];
 
   const filteredGlossary = useMemo(() => {
@@ -609,6 +714,33 @@ export default function Resources() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {resources.map((resource, i) => {
           const Icon = resource.icon;
+
+          const cardButton =
+            resource.type === "internal" ? (
+              <Link href={resource.href!}>
+                <Button variant="outline" className="w-full group">
+                  {resource.action}
+                  <ExternalLink className="ml-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </Button>
+              </Link>
+            ) : resource.type === "dialog" ? (
+              <Button
+                variant="outline"
+                className="w-full group"
+                onClick={() => resource.dialog === "journal" ? setJournalOpen(true) : setChecklistOpen(true)}
+              >
+                {resource.action}
+                <ExternalLink className="ml-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+              </Button>
+            ) : (
+              <a href={resource.href} target="_blank" rel="noopener noreferrer" className="w-full">
+                <Button variant="outline" className="w-full group">
+                  {resource.action}
+                  <ExternalLink className="ml-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </Button>
+              </a>
+            );
+
           return (
             <Card key={i} className="flex flex-col hover:border-primary/50 transition-colors">
               <CardHeader>
@@ -619,14 +751,81 @@ export default function Resources() {
                 <CardDescription className="text-sm mt-2 leading-relaxed">{resource.description}</CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto pt-6">
-                <Button variant="outline" className="w-full group">
-                  {resource.action} <ExternalLink className="ml-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
-                </Button>
+                {cardButton}
               </CardFooter>
             </Card>
           );
         })}
       </div>
+
+      {/* Trading Journal Dialog */}
+      <Dialog open={journalOpen} onOpenChange={setJournalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Notebook className="h-5 w-5 text-green-500" />
+              Daily Crypto Trading Journal
+            </DialogTitle>
+            <DialogDescription>
+              Copy this template into any notes app — Notion, Apple Notes, Google Docs, or just paper.
+            </DialogDescription>
+          </DialogHeader>
+          <pre className="bg-muted/50 rounded-xl p-4 text-xs leading-relaxed font-mono whitespace-pre-wrap text-foreground/80 border border-border/40">
+            {JOURNAL_TEMPLATE}
+          </pre>
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(JOURNAL_TEMPLATE).then(() => {
+                  setJournalCopied(true);
+                  setTimeout(() => setJournalCopied(false), 2500);
+                });
+              }}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border transition-all ${
+                journalCopied
+                  ? "bg-green-500/10 border-green-500/40 text-green-400"
+                  : "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+              }`}
+            >
+              {journalCopied ? <><Check className="h-4 w-4" /> Copied!</> : <><Copy className="h-4 w-4" /> Copy Template</>}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Daily Checklist Dialog */}
+      <Dialog open={checklistOpen} onOpenChange={setChecklistOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckSquare className="h-5 w-5 text-primary" />
+              Your 5-Minute Daily Crypto Routine
+            </DialogTitle>
+            <DialogDescription>
+              Do these 5 things every morning before you make any crypto decision.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {DAILY_CHECKLIST.map((item, idx) => (
+              <div key={idx} className="flex gap-4 p-4 rounded-xl bg-muted/40 border border-border/40">
+                <span className="text-2xl leading-none flex-shrink-0 mt-0.5">{item.emoji}</span>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">Step {idx + 1}</span>
+                  </div>
+                  <p className="text-sm font-semibold mb-1">{item.step}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2 border-t border-border/40">
+            <p className="text-xs text-muted-foreground text-center">
+              Bookmark <span className="text-primary font-medium">AIFirstCrypto.com</span> — everything you need is right here.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── Glossary ─────────────────────────────────────────────────────── */}
       <div className="space-y-6" id="glossary">

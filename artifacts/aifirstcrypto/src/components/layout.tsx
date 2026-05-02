@@ -10,6 +10,7 @@ import {
   X,
   GitCompareArrows,
   Bell,
+  Calculator,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/top-movers", label: "Top Movers", icon: TrendingUp },
     { href: "/fear-greed", label: "Fear & Greed", icon: Wallet },
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
+    { href: "/dca", label: "DCA Calc", icon: Calculator },
     { href: "/watchlist", label: "Watchlist", icon: Star },
     { href: "/resources", label: "Resources", icon: BookOpen },
   ];
