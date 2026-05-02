@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useGetCoins } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -150,6 +151,10 @@ function isClientSort(order: string): order is ClientSortOrder {
 }
 
 export default function Rates() {
+  useSeoMeta({
+    title: "Live Crypto Prices — AIFirstCrypto",
+    description: "Track live prices for Bitcoin, Ethereum, and 100+ cryptocurrencies. Sort by market cap, price change, and volume. Free, no login required.",
+  });
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [order, setOrder] = useState("market_cap_desc");

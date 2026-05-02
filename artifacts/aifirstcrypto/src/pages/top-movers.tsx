@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGetTopMovers } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
@@ -175,6 +176,10 @@ function ShareMoversButton({ type, coins }: { type: "gainers" | "losers"; coins:
 }
 
 export default function TopMovers() {
+  useSeoMeta({
+    title: "Today's Top Crypto Movers — AIFirstCrypto",
+    description: "See which cryptocurrencies are gaining and losing the most in the last 24 hours. Live gainers and losers, updated every few minutes.",
+  });
   const { data: movers, isLoading } = useGetTopMovers();
   const { isInWatchlist, toggleCoin } = useWatchlist();
   const [storyCardOpen, setStoryCardOpen] = useState(false);

@@ -1,7 +1,12 @@
 import { Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 
 export default function Privacy() {
+  useSeoMeta({
+    title: "Privacy Policy — AIFirstCrypto",
+    description: "How AIFirstCrypto collects, uses, and protects your information. Your watchlist and preferences live in your browser only — nothing is stored on our servers.",
+  });
   const EFFECTIVE = "1 May 2026";
   const CONTACT = "privacy@aifirstcrypto.com";
   const SITE = "AIFirstCrypto.com";

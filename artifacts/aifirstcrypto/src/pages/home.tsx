@@ -1,4 +1,5 @@
 import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews, useGetCoinHistory, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -521,6 +522,10 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
 }
 
 export default function Home() {
+  useSeoMeta({
+    title: "AIFirstCrypto — Your Daily Crypto Snapshot",
+    description: "Live crypto prices, Fear & Greed index, top movers, and the latest news — all in one beginner-friendly dashboard. No login, no noise.",
+  });
   const { data: globalMarket, isLoading: loadingMarket, error: errorMarket } = useGetGlobalMarket();
   const { data: marketSummary, isLoading: loadingSummary } = useGetMarketSummary();
   const { data: trendingCoins, isLoading: loadingTrending } = useGetTrending();

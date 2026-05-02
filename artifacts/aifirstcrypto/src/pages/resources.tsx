@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -592,6 +593,10 @@ What drove it: ________________________________________________
 Remember: The plan you make with a clear head beats any decision made on emotion.`;
 
 export default function Resources() {
+  useSeoMeta({
+    title: "Free Crypto Resources for Beginners — AIFirstCrypto",
+    description: "Free tools, guides, and templates to help you navigate crypto with confidence. DCA calculator, trading journal, beginner watchlist, and more.",
+  });
   const [expandedTerm, setExpandedTerm] = useState<string | null>(null);
   const [glossarySearch, setGlossarySearch] = useState("");
   const [glossaryCategory, setGlossaryCategory] = useState("All");

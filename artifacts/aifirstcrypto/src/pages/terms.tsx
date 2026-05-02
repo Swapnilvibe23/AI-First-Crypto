@@ -1,7 +1,12 @@
 import { FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 
 export default function Terms() {
+  useSeoMeta({
+    title: "Terms of Service — AIFirstCrypto",
+    description: "Terms governing your use of AIFirstCrypto.com. Free to use, for educational and informational purposes only.",
+  });
   const EFFECTIVE = "1 May 2026";
   const SITE = "AIFirstCrypto.com";
   const CONTACT = "legal@aifirstcrypto.com";

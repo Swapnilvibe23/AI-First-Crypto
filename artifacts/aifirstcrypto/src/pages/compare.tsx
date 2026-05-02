@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useGetCoins, useGetCoinHistory, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -148,6 +149,10 @@ const CustomTooltip = ({
 };
 
 export default function Compare() {
+  useSeoMeta({
+    title: "Compare Cryptocurrencies Side by Side — AIFirstCrypto",
+    description: "Compare price history, performance, and key stats for any two cryptocurrencies side by side. Free tool, no login required.",
+  });
   const [selectedIds, setSelectedIds] = useState<string[]>(["bitcoin", "ethereum"]);
   const [days, setDays] = useState<7 | 30 | 90>(7);
 

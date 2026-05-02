@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useGetCoins } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
@@ -16,6 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function Watchlist() {
+  useSeoMeta({
+    title: "My Crypto Watchlist — AIFirstCrypto",
+    description: "Track your favourite cryptocurrencies with live prices, 7-day outlook, and optional holdings tracker. Saved to your browser, no account needed.",
+  });
   const { watchlist, toggleCoin } = useWatchlist();
   const { alerts, removeAlert } = useAlerts();
   const { holdings, addHolding, updateHolding, removeHolding } = useHoldings();

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useGetFearGreed, useGetFearGreedHistory, useGetCoinHistory } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,10 @@ const CorrelationTooltip = ({
 };
 
 export default function FearGreed() {
+  useSeoMeta({
+    title: "Crypto Fear & Greed Index — AIFirstCrypto",
+    description: "Today's market sentiment score explained in plain English. Is it time to buy, hold, or be cautious? Free daily signal for crypto beginners.",
+  });
   const [period, setPeriod] = useState<Period>(PERIOD_OPTIONS[0]);
   const [fgStoryOpen, setFgStoryOpen] = useState(false);
 

@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useGetCoins, useGetCoinHistory } from "@workspace/api-client-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -453,6 +454,10 @@ const FREQ_OPTIONS: { value: Frequency; label: string; sub: string }[] = [
 ];
 
 export default function DCA() {
+  useSeoMeta({
+    title: "Crypto DCA Calculator — Dollar Cost Average — AIFirstCrypto",
+    description: "Simulate what consistent weekly or monthly crypto buying would have returned over 1–3 years. Free DCA calculator for Bitcoin, Ethereum, and more.",
+  });
   const [coinId, setCoinId] = useState("bitcoin");
   const [coinSearch, setCoinSearch] = useState("");
   const [amount, setAmount] = useState("100");

@@ -1,4 +1,5 @@
 import { ExternalLink, Shield, TrendingUp, Zap, Globe, Star, CheckCircle2, Info } from "lucide-react";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,6 +155,10 @@ const COMPARE_FEATURES = [
 ];
 
 export default function Exchanges() {
+  useSeoMeta({
+    title: "Best Crypto Exchanges Compared — AIFirstCrypto",
+    description: "Compare the top crypto exchanges by fees, trust, and beginner-friendliness. Coinbase, Binance, Kraken, Gemini and more — all in one place.",
+  });
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-12">
       {/* Hero */}

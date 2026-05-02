@@ -1,8 +1,13 @@
 import { AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSeoMeta } from "@/hooks/use-seo-meta";
 
 export default function Disclaimer() {
+  useSeoMeta({
+    title: "Disclaimer — AIFirstCrypto",
+    description: "AIFirstCrypto is an educational and informational platform. Nothing on this site constitutes financial or investment advice.",
+  });
   const SITE = "AIFirstCrypto.com";
 
   return (
