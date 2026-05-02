@@ -3,7 +3,7 @@ import { useGetTopMovers } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
-import { TrendingUp, TrendingDown, Star, Share2, Copy, Check, Twitter } from "lucide-react";
+import { TrendingUp, TrendingDown, Star, Share2, Copy, Check, Twitter, ImageIcon } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { Button } from "@/components/ui/button";
 import { MoversBarChart } from "@/components/movers-bar-chart";
+import { TopMoversStoryCard } from "@/components/top-movers-story-card";
 
 const SITE_URL = "AIFirstCrypto.com";
 
@@ -176,6 +177,8 @@ function ShareMoversButton({ type, coins }: { type: "gainers" | "losers"; coins:
 export default function TopMovers() {
   const { data: movers, isLoading } = useGetTopMovers();
   const { isInWatchlist, toggleCoin } = useWatchlist();
+  const [storyCardOpen, setStoryCardOpen] = useState(false);
+  const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   if (isLoading) {
     return (
@@ -203,10 +206,24 @@ export default function TopMovers() {
   }
 
   return (
+    <>
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Top Movers</h1>
-        <p className="text-muted-foreground mt-1">Biggest 24h gainers and losers in the market</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Top Movers</h1>
+          <p className="text-muted-foreground mt-1">Biggest 24h gainers and losers in the market</p>
+        </div>
+        {movers && (movers.gainers.length > 0 || movers.losers.length > 0) && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2 rounded-full border-primary/30 text-primary hover:bg-primary/10 flex-shrink-0 mt-1"
+            onClick={() => setStoryCardOpen(true)}
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            Story Card
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -342,5 +359,14 @@ export default function TopMovers() {
         </Card>
       )}
     </div>
+
+    <TopMoversStoryCard
+      open={storyCardOpen}
+      onClose={() => setStoryCardOpen(false)}
+      gainers={movers?.gainers ?? []}
+      losers={movers?.losers ?? []}
+      date={today}
+    />
+    </>
   );
 }
