@@ -2,7 +2,7 @@ import { Shield } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Privacy() {
-  const EFFECTIVE = "1 January 2025";
+  const EFFECTIVE = "1 May 2026";
   const CONTACT = "privacy@aifirstcrypto.com";
   const SITE = "AIFirstCrypto.com";
 

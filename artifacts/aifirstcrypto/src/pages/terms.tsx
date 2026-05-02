@@ -2,7 +2,7 @@ import { FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Terms() {
-  const EFFECTIVE = "1 January 2025";
+  const EFFECTIVE = "1 May 2026";
   const SITE = "AIFirstCrypto.com";
   const CONTACT = "legal@aifirstcrypto.com";
 
