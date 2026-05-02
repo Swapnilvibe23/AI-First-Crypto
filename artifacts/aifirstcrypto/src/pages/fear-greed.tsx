@@ -3,7 +3,9 @@ import { useGetFearGreed, useGetFearGreedHistory, useGetCoinHistory } from "@wor
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { ImageIcon } from "lucide-react";
 import { format } from "date-fns";
+import { FearGreedStoryCard } from "@/components/fear-greed-story-card";
 import {
   AreaChart,
   Area,
@@ -90,6 +92,7 @@ const CorrelationTooltip = ({
 
 export default function FearGreed() {
   const [period, setPeriod] = useState<Period>(PERIOD_OPTIONS[0]);
+  const [fgStoryOpen, setFgStoryOpen] = useState(false);
 
   const { data: fearGreed, isLoading: loadingCurrent } = useGetFearGreed();
   const { data: history, isLoading: loadingHistory } = useGetFearGreedHistory({ limit: period.limit });
@@ -135,6 +138,7 @@ export default function FearGreed() {
   const btcChange = btcPriceStart && btcPriceEnd ? ((btcPriceEnd - btcPriceStart) / btcPriceStart) * 100 : null;
 
   return (
+    <>
     <div className="space-y-8 animate-in fade-in duration-500 pb-12 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Fear & Greed Index</h1>
@@ -160,6 +164,15 @@ export default function FearGreed() {
                 <p className="text-xs text-muted-foreground mt-4 uppercase tracking-wider">
                   Updated {format(new Date(fearGreed.timestamp), "MMM d, yyyy")}
                 </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-5 gap-2 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+                  onClick={() => setFgStoryOpen(true)}
+                >
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Generate Story Card
+                </Button>
               </>
             ) : null}
           </CardContent>
@@ -393,5 +406,18 @@ export default function FearGreed() {
         </CardContent>
       </Card>
     </div>
+
+    {fearGreed && (
+      <FearGreedStoryCard
+        open={fgStoryOpen}
+        onClose={() => setFgStoryOpen(false)}
+        value={fearGreed.value}
+        classification={fearGreed.value_classification}
+        updatedDate={format(new Date(fearGreed.timestamp), "MMM d, yyyy")}
+        history={fgChartData.map(p => ({ date: p.date, value: p.value }))}
+        avgScore={avgFg}
+      />
+    )}
+    </>
   );
 }

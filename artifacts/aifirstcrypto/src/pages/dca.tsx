@@ -293,6 +293,7 @@ function ShareDCAButton({
       roi={result.roi}
       avgBuyPrice={result.avgBuyPrice}
       purchases={result.purchases.length}
+      chartData={result.chartData.map(p => ({ portfolioValue: p.portfolioValue, totalInvested: p.totalInvested }))}
     />
     </>
   );

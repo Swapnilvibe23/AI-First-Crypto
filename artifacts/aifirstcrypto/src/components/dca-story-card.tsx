@@ -20,6 +20,7 @@ export interface StoryCardData {
   roi: number;
   avgBuyPrice: number;
   purchases: number;
+  chartData?: { portfolioValue: number; totalInvested: number }[];
 }
 
 export interface DCAStoryCardProps extends StoryCardData {
@@ -257,7 +258,81 @@ function drawCard(ctx: CanvasRenderingContext2D, d: StoryCardData) {
   txt("RETURN ON INVESTMENT", CW / 2, y + roiSize + 56, {
     size: 28, weight: "700", color: "#334155", align: "center",
   });
-  y += roiSize + 110;
+  y += roiSize + 28;
+
+  // ── Portfolio Growth sparkline ─────────────────────────────────────────────
+  if (d.chartData && d.chartData.length > 2) {
+    const cd   = d.chartData;
+    const spX  = PAD;
+    const spY  = y + 46;
+    const spW  = CW - PAD * 2;
+    const spH  = 148;
+    const allV = cd.map(p => p.portfolioValue);
+    const minV = Math.min(...allV);
+    const maxV = Math.max(...allV);
+    const range = maxV - minV || 1;
+
+    const px = (i: number) => spX + (i / (cd.length - 1)) * spW;
+    const py = (v: number) => spY + spH - ((v - minV) / range) * spH;
+
+    txt("PORTFOLIO GROWTH", CW / 2, y + 32, {
+      size: 24, weight: "700", color: "#334155", align: "center",
+    });
+
+    // Area fill (portfolio value)
+    ctx.save();
+    const spGrad = ctx.createLinearGradient(0, spY, 0, spY + spH);
+    spGrad.addColorStop(0, `${accent}55`);
+    spGrad.addColorStop(1, `${accent}00`);
+    ctx.fillStyle = spGrad;
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(cd[0].portfolioValue));
+    cd.forEach((p, i) => { if (i > 0) ctx.lineTo(px(i), py(p.portfolioValue)); });
+    ctx.lineTo(px(cd.length - 1), spY + spH);
+    ctx.lineTo(px(0), spY + spH);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Portfolio value line
+    ctx.save();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 4;
+    ctx.lineJoin = "round";
+    ctx.lineCap  = "round";
+    ctx.shadowColor = accent;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(cd[0].portfolioValue));
+    cd.forEach((p, i) => { if (i > 0) ctx.lineTo(px(i), py(p.portfolioValue)); });
+    ctx.stroke();
+    ctx.restore();
+
+    // Invested line (dashed white)
+    ctx.save();
+    ctx.setLineDash([8, 6]);
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(cd[0].totalInvested));
+    cd.forEach((p, i) => { if (i > 0) ctx.lineTo(px(i), py(p.totalInvested)); });
+    ctx.stroke();
+    ctx.restore();
+
+    // Legend
+    const legY = spY + spH + 28;
+    // accent dot
+    ctx.save(); ctx.fillStyle = accent; ctx.beginPath(); ctx.arc(spX + 12, legY, 7, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    txt("Portfolio Value", spX + 28, legY + 8, { size: 22, color: "#64748b" });
+    // white dot
+    ctx.save(); ctx.fillStyle = "rgba(255,255,255,0.25)"; ctx.beginPath(); ctx.arc(spX + 300, legY, 7, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    txt("Amount Invested", spX + 316, legY + 8, { size: 22, color: "#64748b" });
+
+    y += spH + 80;
+  } else {
+    y += 24;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════════
   // 2×2 STAT GRID
@@ -265,7 +340,7 @@ function drawCard(ctx: CanvasRenderingContext2D, d: StoryCardData) {
 
   const gap = 20;
   const sW  = (CW - PAD * 2 - gap) / 2;
-  const sH  = 234;
+  const sH  = 218;
 
   type Stat = { label: string; value: string; sub: string; accent?: boolean };
   const stats: Stat[] = [
@@ -315,7 +390,7 @@ function drawCard(ctx: CanvasRenderingContext2D, d: StoryCardData) {
     txt(s.sub, sx + 32, sy + sH - 30, { size: 22, color: "#334155" });
   });
 
-  y += 2 * sH + gap + 72;
+  y += 2 * sH + gap + 36;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // FOOTER
