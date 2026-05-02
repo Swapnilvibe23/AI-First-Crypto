@@ -1,4 +1,5 @@
 import { ExternalLink, Shield, TrendingUp, Zap, Globe, Star, CheckCircle2, Info } from "lucide-react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +168,7 @@ export default function Exchanges() {
           <Info className="h-3.5 w-3.5 flex-shrink-0" />
           <span>
             Some links on this page are affiliate links — we may earn a commission if you sign up. This never influences our assessments.{" "}
-            <a href="/disclaimer" className="underline hover:text-foreground">See full disclosure →</a>
+            <Link href="/disclaimer" className="underline hover:text-foreground">See full disclosure →</Link>
           </span>
         </div>
       </section>
@@ -327,7 +328,7 @@ export default function Exchanges() {
         <p className="text-muted-foreground max-w-lg mx-auto">
           If you're a beginner in the US, <strong>Coinbase</strong> is the safest starting point.
           Outside the US and want the lowest fees? Start with <strong>Binance</strong>.
-          Already comfortable? Try our <a href="/dca" className="text-primary underline">DCA Calculator</a> to plan your strategy before buying.
+          Already comfortable? Try our <Link href="/dca" className="text-primary underline">DCA Calculator</Link> to plan your strategy before buying.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
           <a href="https://coinbase.com/join" target="_blank" rel="noopener noreferrer sponsored">
@@ -343,7 +344,7 @@ export default function Exchanges() {
         </div>
         <p className="text-xs text-muted-foreground">
           Affiliate links · We may earn a commission ·{" "}
-          <a href="/disclaimer" className="underline">Full disclosure</a>
+          <Link href="/disclaimer" className="underline">Full disclosure</Link>
         </p>
       </section>
 
@@ -353,8 +354,8 @@ export default function Exchanges() {
           <strong className="text-yellow-500">Risk warning:</strong> Cryptocurrency is highly volatile and speculative.
           Fees, features, and availability change frequently — verify current terms on each exchange's website before signing up.
           This comparison is for informational purposes only and does not constitute financial advice.
-          See our full <a href="/disclaimer" className="underline hover:text-foreground">Disclaimer</a> and{" "}
-          <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>.
+          See our full <Link href="/disclaimer" className="underline hover:text-foreground">Disclaimer</Link> and{" "}
+          <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>.
         </p>
       </div>
     </div>

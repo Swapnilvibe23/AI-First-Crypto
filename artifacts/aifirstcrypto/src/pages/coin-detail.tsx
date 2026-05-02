@@ -305,12 +305,12 @@ export default function CoinDetail() {
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Compare the best exchanges for buying {coin.name} — low fees, beginner-friendly options available.
               </p>
-              <a href="/exchanges">
+              <Link href="/exchanges">
                 <Button className="w-full rounded-full bg-emerald-600 hover:bg-emerald-500 text-white gap-2 text-sm">
                   Compare exchanges
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Button>
-              </a>
+              </Link>
               <p className="text-[10px] text-muted-foreground text-center">
                 Not financial advice · Some links are affiliate links
               </p>
