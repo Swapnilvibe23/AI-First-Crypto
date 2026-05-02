@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   ExternalLink, FileText, BookOpen, CheckSquare, LineChart,
   Notebook, GraduationCap, ChevronDown, ChevronUp, Search, X,
+  Sparkles, Copy, Check, CalendarDays,
 } from "lucide-react";
 
 // ─── Glossary data ────────────────────────────────────────────────────────────
@@ -534,10 +535,41 @@ const CATEGORY_STYLES: Record<string, string> = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+// Stable index for today — changes at midnight, same for every visitor
+function todayIndex() {
+  return Math.floor(Date.now() / 86_400_000) % GLOSSARY.length;
+}
+
+const TODAY_LABEL = new Date().toLocaleDateString("en-US", {
+  weekday: "long", month: "long", day: "numeric",
+});
+
 export default function Resources() {
   const [expandedTerm, setExpandedTerm] = useState<string | null>(null);
   const [glossarySearch, setGlossarySearch] = useState("");
   const [glossaryCategory, setGlossaryCategory] = useState("All");
+  const [copied, setCopied] = useState(false);
+
+  const termOfTheDay = GLOSSARY[todayIndex()];
+
+  function copyForStories() {
+    const text = [
+      `📚 Crypto Term of the Day`,
+      ``,
+      `${termOfTheDay.emoji} ${termOfTheDay.term}`,
+      ``,
+      termOfTheDay.short,
+      ``,
+      termOfTheDay.long,
+      ``,
+      `Learn more → AIFirstCrypto.com`,
+      `#crypto #cryptobeginners #cryptoeducation #${termOfTheDay.category.toLowerCase()}`,
+    ].join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
 
   const resources = [
     { title: "Crypto Tracker Template", description: "A Google Sheets template to track your portfolio across different exchanges and wallets.", icon: LineChart, color: "text-blue-500", bg: "bg-blue-500/10", action: "Get Template" },
@@ -608,6 +640,68 @@ export default function Resources() {
             <p className="text-sm text-muted-foreground mt-0.5">
               {GLOSSARY.length} terms across 6 categories — plain English, no jargon.
             </p>
+          </div>
+        </div>
+
+        {/* ── Term of the Day ──────────────────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+          {/* Decorative glow */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
+
+          <div className="relative p-5 sm:p-6 space-y-4">
+            {/* Header row */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-primary">Term of the Day</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span>{TODAY_LABEL}</span>
+              </div>
+            </div>
+
+            {/* Term */}
+            <div className="flex items-start gap-4">
+              <span className="text-5xl leading-none flex-shrink-0 mt-1">{termOfTheDay.emoji}</span>
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-2xl font-bold tracking-tight">{termOfTheDay.term}</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${CATEGORY_STYLES[termOfTheDay.category] ?? ""}`}>
+                    {termOfTheDay.category}
+                  </span>
+                </div>
+                <p className="text-sm font-medium text-foreground/80 leading-snug">{termOfTheDay.short}</p>
+              </div>
+            </div>
+
+            {/* Full explanation */}
+            <div className="pl-0 sm:pl-[72px]">
+              <p className="text-sm text-muted-foreground leading-relaxed">{termOfTheDay.long}</p>
+            </div>
+
+            {/* Share button */}
+            <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
+              <p className="text-xs text-muted-foreground">
+                A new term every day — bookmark this page and check back tomorrow.
+              </p>
+              <button
+                onClick={copyForStories}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border transition-all ${
+                  copied
+                    ? "bg-green-500/10 border-green-500/40 text-green-400"
+                    : "bg-primary/10 border-primary/30 text-primary hover:bg-primary/20"
+                }`}
+              >
+                {copied
+                  ? <><Check className="h-3.5 w-3.5" /> Copied!</>
+                  : <><Copy className="h-3.5 w-3.5" /> Copy for Stories</>
+                }
+              </button>
+            </div>
           </div>
         </div>
 
