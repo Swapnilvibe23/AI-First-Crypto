@@ -230,6 +230,163 @@ function ShareSnapshotButton(p: SnapshotShareProps) {
   );
 }
 
+// ── Market Mood Score ─────────────────────────────────────────────────────────
+
+function computeMoodScore(fearGreedValue: number, btcDominance: number, marketChange24h: number) {
+  const base = fearGreedValue;
+  // BTC dominance signal: >65% = risk-off (bearish for overall market), <45% = risk-on
+  const btcSignal = btcDominance > 65 ? -10 : btcDominance < 45 ? +10 : 0;
+  // 24h market cap change: every 1% ≈ 8 mood points, capped at ±15
+  const changeSignal = Math.max(-15, Math.min(15, marketChange24h * 8));
+  const raw = base * 0.65 + btcSignal + changeSignal * 0.35;
+  return Math.round(Math.max(0, Math.min(100, raw)));
+}
+
+type MoodMeta = { label: string; color: string; barColor: string; bgColor: string; borderColor: string; summary: string };
+
+function getMoodMeta(score: number): MoodMeta {
+  if (score <= 20) return {
+    label: "Extreme Fear", color: "text-red-500", barColor: "bg-red-500",
+    bgColor: "from-red-500/10 to-card", borderColor: "border-red-500/40",
+    summary: "Investors are panicking. Historically this can be a buying opportunity — but it may get worse before it gets better.",
+  };
+  if (score <= 35) return {
+    label: "Fearful", color: "text-orange-500", barColor: "bg-orange-500",
+    bgColor: "from-orange-500/10 to-card", borderColor: "border-orange-500/40",
+    summary: "The market is nervous. More sellers than buyers, prices are likely under pressure.",
+  };
+  if (score <= 45) return {
+    label: "Cautious", color: "text-yellow-500", barColor: "bg-yellow-500",
+    bgColor: "from-yellow-500/10 to-card", borderColor: "border-yellow-500/40",
+    summary: "Mixed signals — neither strongly bullish nor bearish. Watch for a clearer direction before making moves.",
+  };
+  if (score <= 55) return {
+    label: "Neutral", color: "text-slate-400", barColor: "bg-slate-400",
+    bgColor: "from-slate-400/10 to-card", borderColor: "border-slate-400/30",
+    summary: "The market is balanced. No strong sentiment in either direction right now.",
+  };
+  if (score <= 65) return {
+    label: "Optimistic", color: "text-lime-400", barColor: "bg-lime-400",
+    bgColor: "from-lime-400/10 to-card", borderColor: "border-lime-400/40",
+    summary: "Buyers are gaining confidence. Positive momentum is building — but stay grounded.",
+  };
+  if (score <= 80) return {
+    label: "Greedy", color: "text-emerald-400", barColor: "bg-emerald-400",
+    bgColor: "from-emerald-400/10 to-card", borderColor: "border-emerald-400/40",
+    summary: "Enthusiasm is running high. Exciting times, but be mindful of overvaluation risk.",
+  };
+  return {
+    label: "Euphoric", color: "text-primary", barColor: "bg-primary",
+    bgColor: "from-primary/10 to-card", borderColor: "border-primary/50",
+    summary: "Maximum excitement. Historically a warning sign — markets can reverse hard from euphoria.",
+  };
+}
+
+function MarketMoodScore({ fearGreedValue, btcDominance, marketChange24h }: {
+  fearGreedValue: number;
+  btcDominance: number;
+  marketChange24h: number;
+}) {
+  const score = computeMoodScore(fearGreedValue, btcDominance, marketChange24h);
+  const meta = getMoodMeta(score);
+  const btcSignalLabel = btcDominance > 65 ? "Risk-off (bearish)" : btcDominance < 45 ? "Risk-on (bullish)" : "Neutral";
+  const btcSignalColor = btcDominance > 65 ? "text-red-400" : btcDominance < 45 ? "text-emerald-400" : "text-muted-foreground";
+  const changeColor = marketChange24h >= 0 ? "text-emerald-400" : "text-red-400";
+
+  return (
+    <div className={`rounded-2xl border-2 ${meta.borderColor} bg-gradient-to-br ${meta.bgColor} p-6`}>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold">Market Mood Score</h2>
+            <InfoTooltip content="A composite 0–100 score blending three signals: the Fear & Greed index (60% weight), Bitcoin's dominance as a risk-on/off signal, and the 24-hour total market cap change. Higher = more bullish sentiment." />
+          </div>
+          <p className="text-sm text-muted-foreground mt-0.5">How the market feels right now, in one number</p>
+        </div>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border ${meta.borderColor} ${meta.color} bg-card`}>
+          {meta.label}
+        </span>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-6 items-start">
+        {/* Score + bar */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-3 w-full md:w-auto">
+          <div className={`text-6xl font-black leading-none tabular-nums ${meta.color}`}>{score}</div>
+          <div className="text-xs text-muted-foreground font-medium">out of 100</div>
+          {/* Progress bar */}
+          <div className="relative w-full md:w-64 h-3 rounded-full bg-muted/60 overflow-hidden">
+            {/* Gradient track */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-600 via-yellow-400 via-lime-400 to-emerald-500 opacity-30" />
+            {/* Fill */}
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ${meta.barColor}`}
+              style={{ width: `${score}%` }}
+            />
+          </div>
+          <div className="flex justify-between w-full md:w-64 text-[10px] text-muted-foreground font-medium px-0.5">
+            <span>Fear</span>
+            <span>Neutral</span>
+            <span>Greed</span>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden md:block w-px self-stretch bg-border/50" />
+
+        {/* Signals + summary */}
+        <div className="flex-1 space-y-4">
+          {/* 3 input signals */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-lg bg-muted/30 p-3 border border-border/40">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">
+                Fear & Greed
+                <InfoTooltip content="The Crypto Fear & Greed Index (0–100) measures overall market emotion. Under 25 = extreme fear, over 75 = extreme greed. It's the biggest driver of the Mood Score." />
+              </div>
+              <div className={`text-lg font-black ${fearGreedValue <= 25 ? "text-red-400" : fearGreedValue >= 75 ? "text-emerald-400" : "text-yellow-400"}`}>
+                {fearGreedValue}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">60% of score</div>
+            </div>
+
+            <div className="rounded-lg bg-muted/30 p-3 border border-border/40">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">
+                BTC Dominance
+                <InfoTooltip content="When Bitcoin's market share rises above ~65%, investors are pulling money into BTC as a 'safe haven', which usually signals bearish sentiment for other coins. Below ~45% signals risk-on appetite." />
+              </div>
+              <div className="text-lg font-black">{btcDominance.toFixed(1)}%</div>
+              <div className={`text-[11px] mt-0.5 font-medium ${btcSignalColor}`}>{btcSignalLabel}</div>
+            </div>
+
+            <div className="rounded-lg bg-muted/30 p-3 border border-border/40">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-1">
+                24h Market Change
+                <InfoTooltip content="The total crypto market cap change in the last 24 hours. A rising market adds positive points to the score; a falling market subtracts them — capped at ±15 points." />
+              </div>
+              <div className={`text-lg font-black ${changeColor}`}>
+                {marketChange24h >= 0 ? "+" : ""}{marketChange24h.toFixed(2)}%
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Up to ±15 pts</div>
+            </div>
+          </div>
+
+          {/* Plain-English summary */}
+          <div className={`rounded-lg border ${meta.borderColor} bg-card/60 px-4 py-3`}>
+            <p className="text-sm leading-relaxed text-foreground/90">
+              <span className={`font-bold ${meta.color}`}>{meta.label}. </span>
+              {meta.summary}
+            </p>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            Not financial advice · Recalculated on every page refresh · Score blends three public signals
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Coin of the Day ───────────────────────────────────────────────────────────
 
 function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }: {
@@ -275,6 +432,7 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
           🔥 Coin of the Day
         </span>
         <span className="text-xs text-muted-foreground">— Trending #1 on CoinGecko right now</span>
+        <InfoTooltip content="The coin being searched most on CoinGecko today. High search interest often precedes price movement — it doesn't mean you should buy it, just that the crowd is watching it." />
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -321,7 +479,10 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
               </ResponsiveContainer>
             </div>
           ) : null}
-          <div className="text-xs text-muted-foreground text-center mt-1 font-medium">7-day price trend</div>
+          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1 font-medium">
+            7-day price trend
+            <InfoTooltip content="Shows how the coin's price has moved over the last 7 days. A rising line means it gained value; a falling line means it lost value." />
+          </div>
         </div>
 
         {/* Stats + CTA */}
@@ -333,7 +494,10 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
               <div className={`text-2xl font-black ${isUp ? "text-emerald-400" : "text-red-400"}`}>
                 {isUp ? "+" : ""}{change7d.toFixed(2)}%
               </div>
-              <div className="text-xs text-muted-foreground font-medium">7-day return</div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                7-day return
+                <InfoTooltip content="The percentage gain or loss if you had bought this coin exactly 7 days ago and held until now." />
+              </div>
             </div>
           )}
           <Link href={`/coin/${coinId}`}>
@@ -495,6 +659,15 @@ export default function Home() {
             </section>
           )}
 
+          {/* Market Mood Score */}
+          {globalMarket && fearGreed && (
+            <MarketMoodScore
+              fearGreedValue={fearGreed.value}
+              btcDominance={globalMarket.btc_dominance}
+              marketChange24h={globalMarket.market_cap_change_percentage_24h}
+            />
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Market Summary */}
             {marketSummary && (
@@ -505,6 +678,7 @@ export default function Home() {
                       <CardTitle className="flex items-center gap-2 text-xl">
                         <Activity className="h-5 w-5 text-primary" />
                         Today's Market Summary
+                        <InfoTooltip content="An AI-generated plain-English summary of today's market conditions, based on live price data, Fear & Greed, and top movers. Refreshed every few minutes. Not financial advice." />
                       </CardTitle>
                       <CardDescription className="flex items-center gap-1 mt-1">
                         <Clock className="h-3 w-3" />
@@ -540,7 +714,10 @@ export default function Home() {
             {globalMarket && (
               <Card className="col-span-1 flex flex-col hover:border-primary/50 transition-colors">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Market Dominance</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    Market Dominance
+                    <InfoTooltip content="How the total crypto market value is split between Bitcoin (BTC), Ethereum (ETH), and all other coins. When BTC's slice grows, money is flowing into Bitcoin specifically." />
+                  </CardTitle>
                   <CardDescription>Share of total market cap</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center flex-1">
@@ -553,7 +730,10 @@ export default function Home() {
             {fearGreed && (
               <Card className="col-span-1 flex flex-col justify-between hover:border-primary/50 transition-colors">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Fear & Greed</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    Fear & Greed
+                    <InfoTooltip content="The Crypto Fear & Greed Index (0–100) summarises overall market emotion from social media, volatility, trading volume, and surveys. Extreme fear can mean buying opportunity; extreme greed often precedes a correction." />
+                  </CardTitle>
                   <CardDescription>Market sentiment today</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center flex-1 py-4">
