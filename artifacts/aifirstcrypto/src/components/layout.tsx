@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useAlerts } from "@/hooks/use-alerts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NewsletterStrip } from "@/components/newsletter-strip";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -264,6 +265,7 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </footer>
+      <ScrollToTop />
     </div>
   );
 }
