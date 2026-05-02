@@ -436,8 +436,8 @@ export default function Home() {
             )}
           </div>
 
+          {/* Top Gainers + Top Losers */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Top Gainers Preview */}
             {topMovers && topMovers.gainers.length > 0 && (
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -474,32 +474,33 @@ export default function Home() {
               </Card>
             )}
 
-            {/* Trending Coins Preview */}
-            {trendingCoins && trendingCoins.length > 0 && (
+            {topMovers && topMovers.losers.length > 0 && (
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    🔥 Trending
-                    <InfoTooltip content="Coins being searched and viewed the most on CoinGecko right now. Popularity can signal incoming price movement." />
+                    <TrendingDown className="h-5 w-5 text-negative" />
+                    Top Losers
+                    <InfoTooltip content="Coins with the biggest price drop (%) in the last 24 hours. Can signal fear or selling pressure." />
                   </CardTitle>
+                  <Link href="/top-movers" className="text-sm font-medium text-primary hover:underline">
+                    See all
+                  </Link>
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="divide-y divide-border/50">
-                    {trendingCoins.slice(0, 3).map((coin) => (
+                    {topMovers.losers.slice(0, 3).map((coin) => (
                       <Link key={coin.id} href={`/coin/${coin.id}`} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
-                          <img src={coin.thumb} alt={coin.name} className="w-8 h-8 rounded-full" />
+                          <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full" />
                           <div>
                             <div className="font-bold text-sm">{coin.symbol.toUpperCase()}</div>
                             <div className="text-xs text-muted-foreground">{coin.name}</div>
                           </div>
                         </div>
                         <div className="text-right">
-                          {coin.price_btc && (
-                            <div className="font-bold text-sm">{coin.price_btc.toFixed(8)} BTC</div>
-                          )}
-                          <div className="text-xs text-muted-foreground">
-                            Rank #{coin.market_cap_rank || 'N/A'}
+                          <div className="font-bold text-sm">${coin.current_price.toLocaleString(undefined, { maximumFractionDigits: 6 })}</div>
+                          <div className="text-xs font-medium text-negative">
+                            {coin.price_change_percentage_24h?.toFixed(2)}%
                           </div>
                         </div>
                       </Link>
@@ -509,6 +510,88 @@ export default function Home() {
               </Card>
             )}
           </div>
+
+          {/* What's Trending Now */}
+          {(loadingTrending || (trendingCoins && trendingCoins.length > 0)) && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    🔥 What's Trending Right Now
+                    <InfoTooltip content="The 7 most searched and viewed coins on CoinGecko in the last 24 hours. High search interest often precedes price movement — worth keeping an eye on." />
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Most searched coins on CoinGecko in the last 24 hours
+                  </p>
+                </div>
+              </div>
+
+              {loadingTrending ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <Skeleton key={i} className="h-36 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : trendingCoins && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                  {trendingCoins.slice(0, 7).map((coin, idx) => {
+                    const rankColors = [
+                      "from-amber-500/20 to-amber-500/5 border-amber-500/30",
+                      "from-slate-400/20 to-slate-400/5 border-slate-400/30",
+                      "from-orange-600/20 to-orange-600/5 border-orange-600/30",
+                    ];
+                    const rankStyle = rankColors[idx] ?? "from-card to-card/80 border-border/50";
+                    const rankEmoji = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+                    return (
+                      <Link
+                        key={coin.id}
+                        href={`/coin/${coin.id}`}
+                        className={`group relative flex flex-col items-center gap-2 rounded-xl border bg-gradient-to-b ${rankStyle} p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-200 cursor-pointer`}
+                      >
+                        {/* Rank badge */}
+                        <div className="absolute top-2.5 right-2.5 text-xs font-bold text-muted-foreground leading-none">
+                          {rankEmoji}
+                        </div>
+
+                        {/* Logo */}
+                        <img
+                          src={coin.thumb}
+                          alt={coin.name}
+                          className="w-10 h-10 rounded-full ring-2 ring-border/50 group-hover:ring-primary/50 transition-all"
+                        />
+
+                        {/* Name + symbol */}
+                        <div className="w-full min-w-0">
+                          <div className="font-bold text-sm truncate leading-tight">
+                            {coin.symbol.toUpperCase()}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate leading-tight mt-0.5">
+                            {coin.name}
+                          </div>
+                        </div>
+
+                        {/* Market cap rank */}
+                        <div className="mt-auto flex flex-col items-center gap-1 w-full">
+                          {coin.market_cap_rank && (
+                            <span className="text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                              MCap #{coin.market_cap_rank}
+                            </span>
+                          )}
+                          {coin.price_btc != null && coin.price_btc > 0 && (
+                            <span className="text-[10px] text-muted-foreground/70 font-mono leading-tight">
+                              {(coin.price_btc as number) < 0.000001
+                                ? (coin.price_btc as number).toExponential(2)
+                                : (coin.price_btc as number).toFixed(8)} ₿
+                            </span>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* News & Sentiment Section */}
           <div className="space-y-4">
