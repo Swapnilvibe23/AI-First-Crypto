@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Star } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { Button } from "@/components/ui/button";
+import { MoversBarChart } from "@/components/movers-bar-chart";
 
 export default function TopMovers() {
   const { data: movers, isLoading } = useGetTopMovers();
@@ -65,7 +66,7 @@ export default function TopMovers() {
                     <div className="text-right">
                       <div className="font-bold">{formatPrice(coin.current_price)}</div>
                       <div className="text-sm font-bold text-positive bg-positive-muted px-2 py-0.5 rounded text-right inline-block mt-1">
-                        +{formatPercentage(coin.price_change_percentage_24h)}
+                        {formatPercentage(coin.price_change_percentage_24h)}
                       </div>
                     </div>
                     <Button 
@@ -138,6 +139,17 @@ export default function TopMovers() {
           </div>
         </div>
       </div>
+
+      {movers && (movers.gainers.length > 0 || movers.losers.length > 0) && (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>24h Performance Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <MoversBarChart gainers={movers.gainers} losers={movers.losers} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

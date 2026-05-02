@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useGetCoinDetail, useGetCoinHistory, getGetCoinDetailQueryKey, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,13 +24,14 @@ export default function CoinDetail() {
   const params = useParams();
   const id = params.id as string;
   const { isInWatchlist, toggleCoin } = useWatchlist();
+  const [days, setDays] = useState<7 | 30>(7);
 
   const { data: coin, isLoading: loadingCoin, error: errorCoin } = useGetCoinDetail(id, {
     query: { enabled: !!id, queryKey: getGetCoinDetailQueryKey(id) }
   });
 
-  const { data: history, isLoading: loadingHistory } = useGetCoinHistory(id, { days: 7 }, {
-    query: { enabled: !!id, queryKey: getGetCoinHistoryQueryKey(id, { days: 7 }) }
+  const { data: history, isLoading: loadingHistory } = useGetCoinHistory(id, { days }, {
+    query: { enabled: !!id, queryKey: getGetCoinHistoryQueryKey(id, { days }) }
   });
 
   if (errorCoin) {
@@ -167,7 +170,27 @@ export default function CoinDetail() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
-              <span>7-Day Price History</span>
+              <div className="flex items-center gap-4">
+                <span>{days}-Day Price History</span>
+                <div className="flex bg-muted rounded-md p-1">
+                  <Button 
+                    variant={days === 7 ? "secondary" : "ghost"} 
+                    size="sm" 
+                    onClick={() => setDays(7)}
+                    className="h-7 text-xs"
+                  >
+                    7D
+                  </Button>
+                  <Button 
+                    variant={days === 30 ? "secondary" : "ghost"} 
+                    size="sm" 
+                    onClick={() => setDays(30)}
+                    className="h-7 text-xs"
+                  >
+                    30D
+                  </Button>
+                </div>
+              </div>
               <span className={`text-sm px-2 py-1 rounded ${isPositive7d ? "bg-positive-muted text-positive" : "bg-negative-muted text-negative"}`}>
                 {formatPercentage(coin.price_change_percentage_7d)}
               </span>
@@ -179,7 +202,13 @@ export default function CoinDetail() {
                 <Skeleton className="h-full w-full" />
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 10, bottom: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={isPositive7d ? "#10b981" : "#ef4444"} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={isPositive7d ? "#10b981" : "#ef4444"} stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                     <XAxis 
                       dataKey="date" 
@@ -202,15 +231,17 @@ export default function CoinDetail() {
                       itemStyle={{ color: 'var(--foreground)' }}
                       formatter={(value: number) => [formatPrice(value), 'Price']}
                     />
-                    <Line 
+                    <Area 
                       type="monotone" 
                       dataKey="price" 
                       stroke={isPositive7d ? "#10b981" : "#ef4444"} 
                       strokeWidth={3} 
+                      fillOpacity={1}
+                      fill="url(#priceGradient)"
                       dot={false}
                       activeDot={{ r: 6, fill: isPositive7d ? "#10b981" : "#ef4444" }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </div>
@@ -238,12 +269,18 @@ export default function CoinDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="text-sm text-muted-foreground mb-1">Circulating Supply</div>
-                <div className="font-bold">{coin.circulating_supply ? formatCompactNumber(coin.circulating_supply) : 'Unknown'} <span className="text-xs uppercase">{coin.symbol}</span></div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Max Supply</div>
-                <div className="font-bold">{coin.max_supply ? formatCompactNumber(coin.max_supply) : 'Infinite / Unknown'} <span className="text-xs uppercase">{coin.symbol}</span></div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-muted-foreground">Circulating Supply</span>
+                  <span className="font-bold">{coin.circulating_supply ? formatCompactNumber(coin.circulating_supply) : 'Unknown'} <span className="text-xs uppercase">{coin.symbol}</span></span>
+                </div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Max Supply</span>
+                  <span className="font-bold">{coin.max_supply ? formatCompactNumber(coin.max_supply) : 'Uncapped'} <span className="text-xs uppercase">{coin.symbol}</span></span>
+                </div>
+                <Progress 
+                  value={coin.max_supply && coin.circulating_supply ? (coin.circulating_supply / coin.max_supply) * 100 : 100} 
+                  className="h-2" 
+                />
               </div>
             </CardContent>
           </Card>

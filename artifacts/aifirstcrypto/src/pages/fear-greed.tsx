@@ -3,14 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine
 } from "recharts";
+import { FearGreedGauge } from "@/components/fear-greed-gauge";
 
 export default function FearGreed() {
   const { data: fearGreed, isLoading: loadingCurrent } = useGetFearGreed();
@@ -33,7 +35,7 @@ export default function FearGreed() {
   };
 
   const chartData = history ? [...history].reverse().map(pt => ({
-    date: format(new Date(parseInt(pt.timestamp) * 1000), "MMM d"),
+    date: format(new Date(pt.timestamp), "MMM d"),
     value: pt.value
   })) : [];
 
@@ -55,14 +57,12 @@ export default function FearGreed() {
               </div>
             ) : fearGreed ? (
               <>
-                <div className={`text-7xl font-black tracking-tighter mb-4 ${getGaugeColor(fearGreed.value)}`}>
-                  {fearGreed.value}
-                </div>
-                <div className={`text-xl font-bold px-6 py-2 rounded-full uppercase tracking-widest ${getGaugeBg(fearGreed.value)}`}>
+                <FearGreedGauge value={fearGreed.value} />
+                <div className={`mt-4 text-xl font-bold px-6 py-2 rounded-full uppercase tracking-widest ${getGaugeBg(fearGreed.value)}`}>
                   {fearGreed.value_classification}
                 </div>
-                <p className="text-xs text-muted-foreground mt-6 uppercase tracking-wider">
-                  Updated {format(new Date(parseInt(fearGreed.timestamp) * 1000), "MMM d, yyyy")}
+                <p className="text-xs text-muted-foreground mt-4 uppercase tracking-wider">
+                  Updated {format(new Date(fearGreed.timestamp), "MMM d, yyyy")}
                 </p>
               </>
             ) : null}
@@ -105,7 +105,13 @@ export default function FearGreed() {
               <Skeleton className="h-full w-full" />
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 20, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="fearGreedGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis 
                     dataKey="date" 
@@ -126,15 +132,19 @@ export default function FearGreed() {
                     contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)', borderRadius: '8px' }}
                     itemStyle={{ color: 'var(--foreground)' }}
                   />
-                  <Line 
+                  <ReferenceLine y={25} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "Fear", fill: "#ef4444", fontSize: 11 }} />
+                  <ReferenceLine y={75} stroke="#10b981" strokeDasharray="4 4" label={{ value: "Greed", fill: "#10b981", fontSize: 11 }} />
+                  <Area 
                     type="monotone" 
                     dataKey="value" 
                     stroke="var(--primary)" 
-                    strokeWidth={3} 
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#fearGreedGradient)"
                     dot={false}
                     activeDot={{ r: 6, fill: 'var(--primary)' }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             )}
           </div>

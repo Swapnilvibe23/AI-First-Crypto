@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
 import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FearGreedGauge } from "@/components/fear-greed-gauge";
+import { MarketDominanceChart } from "@/components/market-dominance-chart";
 
 function DashboardSkeletons() {
   return (
@@ -126,7 +128,7 @@ export default function Home() {
             </section>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Market Summary */}
             {marketSummary && (
               <Card className="col-span-1 lg:col-span-2 border-primary/20 bg-gradient-to-br from-card to-primary/5">
@@ -148,18 +150,29 @@ export default function Home() {
               </Card>
             )}
 
+            {/* Market Dominance */}
+            {globalMarket && (
+              <Card className="col-span-1 flex flex-col hover:border-primary/50 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Market Dominance</CardTitle>
+                  <CardDescription>Share of total market cap</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center flex-1">
+                  <MarketDominanceChart btcDominance={globalMarket.btc_dominance} />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Fear & Greed Preview */}
             {fearGreed && (
-              <Card className="flex flex-col justify-between hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <CardTitle className="text-lg">Fear & Greed Index</CardTitle>
+              <Card className="col-span-1 flex flex-col justify-between hover:border-primary/50 transition-colors">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Fear & Greed</CardTitle>
                   <CardDescription>Market sentiment today</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center py-6">
-                  <div className="text-5xl font-black tracking-tighter mb-2">
-                    {fearGreed.value}
-                  </div>
-                  <div className="text-lg font-bold px-4 py-1 rounded-full bg-secondary/50 text-secondary-foreground uppercase tracking-widest">
+                <CardContent className="flex flex-col items-center justify-center flex-1 py-4">
+                  <FearGreedGauge value={fearGreed.value} />
+                  <div className="mt-4 text-sm font-bold px-3 py-1 rounded-full bg-secondary/50 text-secondary-foreground uppercase tracking-widest text-center">
                     {fearGreed.value_classification}
                   </div>
                 </CardContent>

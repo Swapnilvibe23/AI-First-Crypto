@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Sparkline } from "@/components/sparkline";
 
 export default function Rates() {
   const [search, setSearch] = useState("");
@@ -94,6 +95,7 @@ export default function Rates() {
                 <TableHead>Coin</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-right">24h Change</TableHead>
+                <TableHead className="text-right hidden md:table-cell">7d</TableHead>
                 <TableHead className="text-right hidden md:table-cell">Market Cap</TableHead>
                 <TableHead className="text-right hidden sm:table-cell">Volume</TableHead>
               </TableRow>
@@ -106,6 +108,7 @@ export default function Rates() {
                     <TableCell><div className="flex items-center gap-2"><Skeleton className="h-8 w-8 rounded-full" /><Skeleton className="h-4 w-24" /></div></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell className="text-right hidden md:table-cell"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                     <TableCell className="text-right hidden md:table-cell"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                     <TableCell className="text-right hidden sm:table-cell"><Skeleton className="h-4 w-16 ml-auto" /></TableCell>
                   </TableRow>
@@ -138,6 +141,14 @@ export default function Rates() {
                       <div className={`inline-flex items-center gap-1 font-medium ${coin.price_change_percentage_24h && coin.price_change_percentage_24h >= 0 ? "text-positive" : "text-negative"}`}>
                         {coin.price_change_percentage_24h && coin.price_change_percentage_24h >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                         {formatPercentage(coin.price_change_percentage_24h)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right hidden md:table-cell">
+                      <div className="w-24 ml-auto">
+                        <Sparkline 
+                          data={coin.sparkline_in_7d?.price ?? []} 
+                          positive={(coin.price_change_percentage_7d_in_currency ?? coin.price_change_percentage_24h ?? 0) >= 0} 
+                        />
                       </div>
                     </TableCell>
                     <TableCell className="text-right hidden md:table-cell text-muted-foreground font-medium">
