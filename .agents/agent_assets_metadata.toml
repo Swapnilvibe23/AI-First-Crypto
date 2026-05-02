@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "CjSXCdIn2ZZgv8tJ6JDMU"
+uri = "file://artifacts/aifirstcrypto/public/opengraph.png"
+type = "image"
+title = "AIFirstCrypto branded OG card"
