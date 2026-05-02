@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, Star } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { Button } from "@/components/ui/button";
@@ -59,7 +61,10 @@ export default function TopMovers() {
                       <div className="font-bold flex items-center gap-2">
                         {coin.name} <span className="text-xs text-muted-foreground uppercase font-medium">{coin.symbol}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">Vol: ${formatCompactNumber(coin.total_volume)}</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        Vol: ${formatCompactNumber(coin.total_volume)}
+                        <InfoTooltip content="24-hour trading volume in USD. High volume on a gaining coin suggests real buying pressure." />
+                      </div>
                     </div>
                   </Link>
                   <div className="flex items-center gap-4">
@@ -69,17 +74,24 @@ export default function TopMovers() {
                         {formatPercentage(coin.price_change_percentage_24h)}
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleCoin(coin.id);
-                      }}
-                      className={isInWatchlist(coin.id) ? "text-primary" : "text-muted-foreground"}
-                    >
-                      <Star className={`h-5 w-5 ${isInWatchlist(coin.id) ? "fill-current" : ""}`} />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleCoin(coin.id);
+                          }}
+                          className={isInWatchlist(coin.id) ? "text-primary" : "text-muted-foreground"}
+                        >
+                          <Star className={`h-5 w-5 ${isInWatchlist(coin.id) ? "fill-current" : ""}`} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        {isInWatchlist(coin.id) ? "Remove from watchlist" : "Add to watchlist"}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </CardContent>
               </Card>
@@ -106,7 +118,10 @@ export default function TopMovers() {
                       <div className="font-bold flex items-center gap-2">
                         {coin.name} <span className="text-xs text-muted-foreground uppercase font-medium">{coin.symbol}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">Vol: ${formatCompactNumber(coin.total_volume)}</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                        Vol: ${formatCompactNumber(coin.total_volume)}
+                        <InfoTooltip content="24-hour trading volume in USD. High volume on a falling coin can indicate heavy sell pressure." />
+                      </div>
                     </div>
                   </Link>
                   <div className="flex items-center gap-4">
@@ -116,17 +131,24 @@ export default function TopMovers() {
                         {formatPercentage(coin.price_change_percentage_24h)}
                       </div>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleCoin(coin.id);
-                      }}
-                      className={isInWatchlist(coin.id) ? "text-primary" : "text-muted-foreground"}
-                    >
-                      <Star className={`h-5 w-5 ${isInWatchlist(coin.id) ? "fill-current" : ""}`} />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleCoin(coin.id);
+                          }}
+                          className={isInWatchlist(coin.id) ? "text-primary" : "text-muted-foreground"}
+                        >
+                          <Star className={`h-5 w-5 ${isInWatchlist(coin.id) ? "fill-current" : ""}`} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        {isInWatchlist(coin.id) ? "Remove from watchlist" : "Add to watchlist"}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </CardContent>
               </Card>

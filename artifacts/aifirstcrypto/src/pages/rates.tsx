@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { formatPrice, formatCompactNumber, formatPercentage } from "@/lib/format";
 import { TrendingDown, TrendingUp, Search, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -239,7 +240,10 @@ export default function Rates() {
       {/* ── Heat Map View ─────────────────────────────────────────── */}
       {view === "heatmap" && (
         <div className="space-y-4">
-          <HeatMapLegend />
+          <div className="flex items-center gap-2 flex-wrap">
+            <HeatMapLegend />
+            <InfoTooltip content="Each tile is colored by its 24h % price change. Green = gaining, red = losing, gray = flat. Top coins (BTC, ETH) get larger tiles — proportional to market cap rank." />
+          </div>
           {isLoading ? (
             <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
               {Array.from({ length: 40 }).map((_, i) => (
@@ -277,10 +281,30 @@ export default function Rates() {
                   <TableHead className="w-12 text-center">#</TableHead>
                   <TableHead>Coin</TableHead>
                   <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">24h Change</TableHead>
-                  <TableHead className="text-right hidden md:table-cell">7d</TableHead>
-                  <TableHead className="text-right hidden md:table-cell">Market Cap</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">Volume</TableHead>
+                  <TableHead className="text-right">
+                    <span className="inline-flex items-center gap-1">
+                      24h Change
+                      <InfoTooltip content="Price change percentage over the last 24 hours." />
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-right hidden md:table-cell">
+                    <span className="inline-flex items-center gap-1">
+                      7d
+                      <InfoTooltip content="7-day mini price chart (sparkline). Shows the recent trend — up or down." />
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-right hidden md:table-cell">
+                    <span className="inline-flex items-center gap-1">
+                      Market Cap
+                      <InfoTooltip content="Total market value = current price × circulating supply. Higher = larger, more established coin." />
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">
+                    <span className="inline-flex items-center gap-1">
+                      Volume
+                      <InfoTooltip content="Total dollar value traded in the last 24 hours. High volume often means stronger price moves." />
+                    </span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

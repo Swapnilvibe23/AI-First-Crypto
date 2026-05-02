@@ -19,6 +19,7 @@ import {
 } from "recharts";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { formatPrice, formatCompactNumber } from "@/lib/format";
+import { InfoTooltip } from "@/components/info-tooltip";
 
 const PERIOD_OPTIONS = [
   { label: "30D", days: 30, limit: 30 },
@@ -191,7 +192,10 @@ export default function FearGreed() {
 
       {/* Period switcher */}
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground font-medium">Period:</span>
+        <span className="text-sm text-muted-foreground font-medium flex items-center gap-1.5">
+          Period:
+          <InfoTooltip content="Choose how far back to show the Fear & Greed history and the BTC price correlation chart." />
+        </span>
         <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
           {PERIOD_OPTIONS.map((opt) => (
             <Button
@@ -271,21 +275,30 @@ export default function FearGreed() {
         <CardHeader>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <CardTitle>Sentiment vs. Bitcoin Price</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Sentiment vs. Bitcoin Price
+                <InfoTooltip content="The blue line shows the Fear & Greed score (left axis, 0–100). The orange area shows Bitcoin's price (right axis). Watch if big fear dips coincide with price bottoms — or greed spikes with tops." />
+              </CardTitle>
               <CardDescription>Does fear or greed predict where price goes next?</CardDescription>
             </div>
             {/* Period summary stats */}
             {!loadingCorrelation && avgFg !== null && btcChange !== null && (
               <div className="flex items-center gap-4 text-sm flex-wrap">
                 <div className="text-right">
-                  <p className="text-muted-foreground text-xs uppercase tracking-wide">Avg Sentiment</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wide flex items-center justify-end gap-1">
+                    Avg Sentiment
+                    <InfoTooltip content="The average Fear & Greed score over the selected period. Below 50 = market leaning fearful; above 50 = market leaning greedy." />
+                  </p>
                   <p className={`font-bold ${getSentimentColor(avgFg) === "#ef4444" || getSentimentColor(avgFg) === "#f97316" ? "text-red-500" : "text-emerald-500"}`}
                     style={{ color: getSentimentColor(avgFg) }}>
                     {avgFg} – {getSentimentLabel(avgFg)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-muted-foreground text-xs uppercase tracking-wide">BTC {period.label} Change</p>
+                  <p className="text-muted-foreground text-xs uppercase tracking-wide flex items-center justify-end gap-1">
+                    BTC {period.label} Change
+                    <InfoTooltip content="Bitcoin's price change from the start to the end of the selected period, as a percentage." />
+                  </p>
                   <p className={`font-bold ${btcChange >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                     {btcChange >= 0 ? "+" : ""}{btcChange.toFixed(1)}%
                   </p>

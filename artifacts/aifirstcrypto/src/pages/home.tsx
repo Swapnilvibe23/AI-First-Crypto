@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
 import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
@@ -153,6 +154,7 @@ export default function Home() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     Market Cap
+                    <InfoTooltip content="The total value of all cryptocurrencies combined, in US dollars. Tracks the overall size of the crypto market." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -166,8 +168,9 @@ export default function Home() {
 
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     24h Volume
+                    <InfoTooltip content="The total dollar value of all crypto traded across every exchange in the last 24 hours. High volume = high activity." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -177,8 +180,9 @@ export default function Home() {
 
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     BTC Dominance
+                    <InfoTooltip content="Bitcoin's share of the total crypto market cap. A rising number means more money is flowing into BTC vs. other coins (altcoins)." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -188,8 +192,9 @@ export default function Home() {
 
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     Active Coins
+                    <InfoTooltip content="Total number of cryptocurrencies currently tracked across all exchanges globally." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -266,6 +271,7 @@ export default function Home() {
                   <CardTitle className="text-lg flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-positive" />
                     Top Gainers
+                    <InfoTooltip content="Coins with the biggest price increase (%) in the last 24 hours. Click any coin for the full chart." />
                   </CardTitle>
                   <Link href="/top-movers" className="text-sm font-medium text-primary hover:underline">
                     See all
@@ -301,6 +307,7 @@ export default function Home() {
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-lg flex items-center gap-2">
                     🔥 Trending
+                    <InfoTooltip content="Coins being searched and viewed the most on CoinGecko right now. Popularity can signal incoming price movement." />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -341,6 +348,7 @@ export default function Home() {
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-positive" />Bullish</span>
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-negative" />Bearish</span>
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-muted-foreground" />Neutral</span>
+                <InfoTooltip content="Sentiment is auto-detected by scanning article headlines for bullish keywords (rally, surge, gain…) and bearish keywords (crash, ban, hack…). Not financial advice." />
               </div>
             </div>
 

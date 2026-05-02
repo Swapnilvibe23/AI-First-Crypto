@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, X, Plus, GitCompareArrows } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
 import {
   ResponsiveContainer,
   LineChart,
@@ -268,7 +269,10 @@ export default function Compare() {
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <CardTitle className="text-xl">Price Performance</CardTitle>
-                <CardDescription>Normalised to % change from start of period</CardDescription>
+                <CardDescription className="flex items-center gap-1.5">
+                  Normalised to % change from start of period
+                  <InfoTooltip content="All coins start at 0% regardless of their price. This lets you fairly compare whether Bitcoin, Ethereum, or Solana performed better over the same window." />
+                </CardDescription>
               </div>
               {/* Period switcher */}
               <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
@@ -370,28 +374,37 @@ export default function Compare() {
                 {[
                   {
                     label: "Price",
+                    tooltip: null as string | null,
                     format: (c: CoinRow) => formatPrice(c.current_price),
                     highlight: false,
                   },
                   {
                     label: "24h Change",
+                    tooltip: "Price change percentage over the last 24 hours.",
                     format: (c: CoinRow) => formatPercentage(c.price_change_percentage_24h),
                     highlight: true,
                     positive: (c: CoinRow) => (c.price_change_percentage_24h ?? 0) >= 0,
                   },
                   {
                     label: "Market Cap",
+                    tooltip: "Total market value = price × circulating supply. Higher = larger, more established coin.",
                     format: (c: CoinRow) => `$${formatCompactNumber(c.market_cap)}`,
                     highlight: false,
                   },
                   {
                     label: "24h Volume",
+                    tooltip: "Total dollar value traded in the last 24 hours. High volume = more active interest.",
                     format: (c: CoinRow) => `$${formatCompactNumber(c.total_volume)}`,
                     highlight: false,
                   },
                 ].map((row, ri) => (
                   <tr key={row.label} className={ri % 2 === 0 ? "bg-muted/20" : ""}>
-                    <td className="px-5 py-3 text-muted-foreground font-medium">{row.label}</td>
+                    <td className="px-5 py-3 text-muted-foreground font-medium">
+                      <span className="inline-flex items-center gap-1">
+                        {row.label}
+                        {row.tooltip && <InfoTooltip content={row.tooltip} />}
+                      </span>
+                    </td>
                     {selectedCoins.map((coin) => {
                       const val = row.format(coin);
                       const isPos = row.highlight ? row.positive!(coin) : null;

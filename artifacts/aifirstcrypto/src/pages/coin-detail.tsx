@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, Star, ArrowLeft, Bot, Globe, AlertCircle } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { PriceAlertDialog } from "@/components/price-alert-dialog";
@@ -105,8 +106,9 @@ export default function CoinDetail() {
                 <span className="text-xl md:text-2xl text-muted-foreground font-medium bg-muted px-2 py-1 rounded-md uppercase">
                   {coin.symbol}
                 </span>
-                <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-md ml-2">
+                <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-1 rounded-md ml-2 inline-flex items-center gap-1">
                   Rank #{coin.market_cap_rank}
+                  <InfoTooltip content="Market cap rank — #1 is the largest cryptocurrency by total value. Lower number = bigger, more well-known coin." />
                 </span>
               </h1>
             </div>
@@ -136,7 +138,10 @@ export default function CoinDetail() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Current Price</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              Current Price
+              <InfoTooltip content="The latest traded price for this coin, updated in real time." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl md:text-3xl font-black">{formatPrice(coin.current_price)}</div>
@@ -145,7 +150,10 @@ export default function CoinDetail() {
         
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">24h Change</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              24h Change
+              <InfoTooltip content="How much the price has moved (%) in the last 24 hours. Green = up, red = down." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold flex items-center ${isPositive24h ? "text-positive" : "text-negative"}`}>
@@ -157,7 +165,10 @@ export default function CoinDetail() {
 
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Market Cap</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              Market Cap
+              <InfoTooltip content="Total market value = current price × circulating supply. Used to rank coins by size — larger market cap = more established." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${formatCompactNumber(coin.market_cap)}</div>
@@ -166,7 +177,10 @@ export default function CoinDetail() {
 
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">24h Volume</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              24h Volume
+              <InfoTooltip content="Total dollar value of this coin traded across all exchanges in the last 24 hours. High volume on a price move confirms stronger momentum." />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${formatCompactNumber(coin.total_volume)}</div>
@@ -278,17 +292,30 @@ export default function CoinDetail() {
             <CardContent className="space-y-4">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm text-muted-foreground">Circulating Supply</span>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    Circulating Supply
+                    <InfoTooltip content="Number of coins currently in circulation and available to trade on the open market." />
+                  </span>
                   <span className="font-bold">{coin.circulating_supply ? formatCompactNumber(coin.circulating_supply) : 'Unknown'} <span className="text-xs uppercase">{coin.symbol}</span></span>
                 </div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Max Supply</span>
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    Max Supply
+                    <InfoTooltip content="The maximum number of coins that will ever exist. 'Uncapped' means there is no hard limit — more can be created over time (e.g. Ethereum)." />
+                  </span>
                   <span className="font-bold">{coin.max_supply ? formatCompactNumber(coin.max_supply) : 'Uncapped'} <span className="text-xs uppercase">{coin.symbol}</span></span>
                 </div>
                 <Progress 
                   value={coin.max_supply && coin.circulating_supply ? (coin.circulating_supply / coin.max_supply) * 100 : 100} 
                   className="h-2" 
+                  title={coin.max_supply && coin.circulating_supply ? `${((coin.circulating_supply / coin.max_supply) * 100).toFixed(1)}% of max supply in circulation` : "No max supply cap"}
                 />
+                <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                  {coin.max_supply && coin.circulating_supply
+                    ? `${((coin.circulating_supply / coin.max_supply) * 100).toFixed(1)}% of max supply in circulation`
+                    : "No hard supply cap"}
+                  <InfoTooltip content="The bar shows how much of the total possible supply is already circulating. A coin near 100% has little room for new coins to dilute the price." />
+                </p>
               </div>
             </CardContent>
           </Card>

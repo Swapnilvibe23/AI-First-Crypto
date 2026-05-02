@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Link } from "wouter";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
 import { TrendingUp, TrendingDown, Star, Search, Bell, Trash2, ArrowUpRight, ArrowDownRight, Briefcase, Plus, Pencil, Wallet } from "lucide-react";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useAlerts } from "@/hooks/use-alerts";
@@ -104,19 +105,28 @@ export default function Watchlist() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground mb-1">Total Value</p>
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  Total Value
+                  <InfoTooltip content="Current market value of all your holdings combined, based on live prices." />
+                </p>
                 <p className="text-2xl font-bold">${formatCompactNumber(totalValue)}</p>
               </CardContent>
             </Card>
             <Card className="bg-card/50 backdrop-blur-sm border-border/50">
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground mb-1">Cost Basis</p>
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  Cost Basis
+                  <InfoTooltip content="The total amount you paid for your holdings (quantity × average buy price). Your 'break-even' reference point." />
+                </p>
                 <p className="text-2xl font-bold">${formatCompactNumber(totalCost)}</p>
               </CardContent>
             </Card>
             <Card className={`backdrop-blur-sm border-border/50 ${totalPnl >= 0 ? "bg-positive/10 border-positive/20" : "bg-negative/10 border-negative/20"}`}>
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground mb-1">Total P&amp;L</p>
+                <p className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
+                  Total P&amp;L
+                  <InfoTooltip content="Profit &amp; Loss = current value minus your total cost. Green means you're up, red means you're down. Does not account for taxes or fees." />
+                </p>
                 <p className={`text-2xl font-bold ${totalPnl >= 0 ? "text-positive" : "text-negative"}`}>
                   {totalPnl >= 0 ? "+" : ""}{formatPrice(totalPnl)}
                 </p>
@@ -160,8 +170,9 @@ export default function Watchlist() {
                         <span className="font-bold">{holding.coinName}</span>
                         <span className="text-xs text-muted-foreground uppercase">{holding.coinSymbol}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                         {holding.amount} {holding.coinSymbol.toUpperCase()} · avg {formatPrice(holding.buyPrice)}
+                        <InfoTooltip content="Your average buy price per coin. P&L is calculated as (current price − avg buy price) × amount held." />
                       </div>
                     </div>
 
