@@ -193,6 +193,7 @@ export const GetNewsResponseItem = zod.object({
   pubDate: zod.string(),
   source: zod.string(),
   sentiment: zod.enum(["bullish", "bearish", "neutral"]),
+  imageUrl: zod.string().optional(),
 });
 export const GetNewsResponse = zod.array(GetNewsResponseItem);
 

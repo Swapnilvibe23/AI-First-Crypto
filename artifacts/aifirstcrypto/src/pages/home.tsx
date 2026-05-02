@@ -462,28 +462,41 @@ export default function Home() {
                       href={item.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`group flex flex-col gap-2 p-4 rounded-xl border border-l-4 border-border/50 hover:border-primary/40 transition-all duration-200 hover:shadow-md ${sentimentColor}`}
+                      className={`group flex flex-col rounded-xl border border-l-4 border-border/50 hover:border-primary/40 transition-all duration-200 hover:shadow-md overflow-hidden ${sentimentColor}`}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm font-semibold leading-snug line-clamp-3 group-hover:text-primary transition-colors flex-1">
-                          {item.title}
-                        </p>
-                        <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground font-medium">{item.source}</span>
-                          {timeAgo && (
-                            <>
-                              <span className="text-muted-foreground/40">·</span>
-                              <span className="text-xs text-muted-foreground">{timeAgo}</span>
-                            </>
-                          )}
+                      {/* Article image */}
+                      {item.imageUrl && (
+                        <div className="w-full h-32 overflow-hidden flex-shrink-0 bg-muted">
+                          <img
+                            src={item.imageUrl}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                          />
                         </div>
-                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${sentimentBadge}`}>
-                          {sentimentIcon}
-                          {item.sentiment}
-                        </span>
+                      )}
+                      <div className="flex flex-col gap-2 p-4 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-semibold leading-snug line-clamp-3 group-hover:text-primary transition-colors flex-1">
+                            {item.title}
+                          </p>
+                          <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-medium">{item.source}</span>
+                            {timeAgo && (
+                              <>
+                                <span className="text-muted-foreground/40">·</span>
+                                <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                              </>
+                            )}
+                          </div>
+                          <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${sentimentBadge}`}>
+                            {sentimentIcon}
+                            {item.sentiment}
+                          </span>
+                        </div>
                       </div>
                     </a>
                   );

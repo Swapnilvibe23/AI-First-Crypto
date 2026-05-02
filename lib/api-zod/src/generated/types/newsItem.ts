@@ -13,4 +13,5 @@ export interface NewsItem {
   pubDate: string;
   source: string;
   sentiment: NewsItemSentiment;
+  imageUrl?: string;
 }
