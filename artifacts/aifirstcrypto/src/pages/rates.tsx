@@ -71,9 +71,9 @@ function HeatTile({ coin }: HeatTileProps) {
   const size = getTileSize(coin.market_cap_rank);
 
   const sizeClasses = {
-    lg: "col-span-2 row-span-2 p-4 min-h-[140px]",
-    md: "col-span-2 row-span-1 p-3 min-h-[90px] sm:col-span-1 sm:row-span-2 sm:min-h-[140px]",
-    sm: "col-span-1 row-span-1 p-2.5 min-h-[90px]",
+    lg: "col-span-2 row-span-2 p-4 min-h-[120px]",
+    md: "col-span-2 row-span-1 p-3 min-h-[80px]",
+    sm: "col-span-1 row-span-1 p-2 min-h-[80px]",
   };
 
   return (
@@ -245,19 +245,13 @@ export default function Rates() {
             <InfoTooltip content="Each tile is colored by its 24h % price change. Green = gaining, red = losing, gray = flat. Top coins (BTC, ETH) get larger tiles — proportional to market cap rank." />
           </div>
           {isLoading ? (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
-              {Array.from({ length: 40 }).map((_, i) => (
-                <Skeleton key={i} className="rounded-xl h-[90px]" />
+            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
+              {Array.from({ length: 48 }).map((_, i) => (
+                <Skeleton key={i} className="rounded-xl h-[80px]" />
               ))}
             </div>
           ) : (
-            <div
-              className="grid gap-2"
-              style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-                gridAutoFlow: "dense",
-              }}
-            >
+            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2" style={{ gridAutoFlow: "dense" }}>
               {filteredCoins?.map((coin) => (
                 <HeatTile key={coin.id} coin={coin as HeatTileProps["coin"]} />
               ))}

@@ -251,10 +251,9 @@ export function Layout({ children }: LayoutProps) {
 
           {/* Divider + bottom row */}
           <div className="border-t border-border/40 pt-6 space-y-3">
-            <p className="text-[11px] text-muted-foreground leading-relaxed max-w-3xl">
-              <strong className="text-muted-foreground/80">Disclaimer:</strong> The information provided on AIFirstCrypto is for educational purposes only
-              and does not constitute financial, investment, or trading advice. Crypto is highly volatile — do your own research before making
-              any investment decisions. Some links on this site are affiliate links.{" "}
+            <p className="text-[11px] text-muted-foreground">
+              <strong className="text-muted-foreground/80">Disclaimer:</strong>{" "}
+              For educational purposes only · Not financial advice · Crypto is volatile, DYOR · Some links are affiliate.{" "}
               <Link href="/disclaimer" className="underline hover:text-foreground">Full disclaimer →</Link>
             </p>
             <p className="text-[11px] text-muted-foreground">
