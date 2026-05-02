@@ -18,8 +18,13 @@ const router: IRouter = Router();
 
 // GET /market/global
 router.get("/market/global", async (req, res): Promise<void> => {
-  const data = await fetchGlobalMarket();
-  res.json(GetGlobalMarketResponse.parse(data));
+  try {
+    const data = await fetchGlobalMarket();
+    res.json(GetGlobalMarketResponse.parse(data));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch global market");
+    res.status(503).json({ error: "Market data temporarily unavailable" });
+  }
 });
 
 // GET /market/coins?page=1&per_page=100&order=market_cap_desc
@@ -29,58 +34,78 @@ router.get("/market/coins", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { page, per_page, order } = parsed.data;
-  const coins = await fetchCoins(page, per_page, order);
-  res.json(GetCoinsResponse.parse(coins));
+  try {
+    const { page, per_page, order } = parsed.data;
+    const coins = await fetchCoins(page, per_page, order);
+    res.json(GetCoinsResponse.parse(coins));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch coins");
+    res.status(503).json({ error: "Coins data temporarily unavailable" });
+  }
 });
 
 // GET /market/trending
-router.get("/market/trending", async (_req, res): Promise<void> => {
-  const coins = await fetchTrending();
-  res.json(GetTrendingResponse.parse(coins));
+router.get("/market/trending", async (req, res): Promise<void> => {
+  try {
+    const coins = await fetchTrending();
+    res.json(GetTrendingResponse.parse(coins));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch trending");
+    res.status(503).json({ error: "Trending data temporarily unavailable" });
+  }
 });
 
 // GET /market/top-movers — derives from the top-100 market data
-router.get("/market/top-movers", async (_req, res): Promise<void> => {
-  const coins = await fetchCoins(1, 100, "market_cap_desc") as Record<string, unknown>[];
-  const withChange = coins.filter(
-    (c) => typeof c.price_change_percentage_24h === "number"
-  );
-  const sorted = [...withChange].sort(
-    (a, b) => (b.price_change_percentage_24h as number) - (a.price_change_percentage_24h as number)
-  );
-  const gainers = sorted.slice(0, 10);
-  const losers = sorted.slice(-10).reverse();
-  res.json(GetTopMoversResponse.parse({ gainers, losers }));
+router.get("/market/top-movers", async (req, res): Promise<void> => {
+  try {
+    const coins = await fetchCoins(1, 100, "market_cap_desc") as Record<string, unknown>[];
+    const withChange = coins.filter(
+      (c) => typeof c.price_change_percentage_24h === "number"
+    );
+    const sorted = [...withChange].sort(
+      (a, b) => (b.price_change_percentage_24h as number) - (a.price_change_percentage_24h as number)
+    );
+    const gainers = sorted.slice(0, 10);
+    const losers = sorted.slice(-10).reverse();
+    res.json(GetTopMoversResponse.parse({ gainers, losers }));
+  } catch (err) {
+    req.log.error(err, "Failed to fetch top movers");
+    res.status(503).json({ error: "Top movers data temporarily unavailable" });
+  }
 });
 
 // GET /market/summary — plain-English computed summary
-router.get("/market/summary", async (_req, res): Promise<void> => {
-  const [global, coins, fearGreed] = await Promise.all([
-    fetchGlobalMarket(),
-    fetchCoins(1, 50, "market_cap_desc") as Promise<Record<string, unknown>[]>,
-    fetchFearGreed().catch(() => ({ value: 50 })),
-  ]);
+router.get("/market/summary", async (req, res): Promise<void> => {
+  try {
+    const [global, coins, fearGreed] = await Promise.all([
+      fetchGlobalMarket(),
+      fetchCoins(1, 50, "market_cap_desc") as Promise<Record<string, unknown>[]>,
+      fetchFearGreed().catch(() => ({ value: 50 })),
+    ]);
 
-  const coinsWithChange = (coins as Record<string, unknown>[]).filter(
-    (c) => typeof c.price_change_percentage_24h === "number"
-  );
-  const sorted = [...coinsWithChange].sort(
-    (a, b) => (b.price_change_percentage_24h as number) - (a.price_change_percentage_24h as number)
-  );
-  const topGainerChange = sorted[0]?.price_change_percentage_24h as number ?? 0;
-  const topLoserChange = sorted[sorted.length - 1]?.price_change_percentage_24h as number ?? 0;
+    const coinsWithChange = (coins as Record<string, unknown>[]).filter(
+      (c) => typeof c.price_change_percentage_24h === "number"
+    );
+    const sorted = [...coinsWithChange].sort(
+      (a, b) => (b.price_change_percentage_24h as number) - (a.price_change_percentage_24h as number)
+    );
+    const topGainerChange = sorted[0]?.price_change_percentage_24h as number ?? 0;
+    const topLoserChange = sorted[sorted.length - 1]?.price_change_percentage_24h as number ?? 0;
 
-  const summary = generateMarketSummary({
-    btcDominance: global.btc_dominance,
-    marketCapChange24h: global.market_cap_change_percentage_24h,
-    totalVolume: global.total_volume_usd,
-    fearGreedValue: (fearGreed as { value: number }).value,
-    topGainerChange,
-    topLoserChange,
-  });
+    const summary = generateMarketSummary({
+      btcDominance: global.btc_dominance,
+      marketCapChange24h: global.market_cap_change_percentage_24h,
+      totalVolume: global.total_volume_usd,
+      fearGreedValue: (fearGreed as { value: number }).value,
+      topGainerChange,
+      topLoserChange,
+    });
 
-  res.json(GetMarketSummaryResponse.parse({ summary, generated_at: new Date().toISOString() }));
+    res.json(GetMarketSummaryResponse.parse({ summary, generated_at: new Date().toISOString() }));
+  } catch (err) {
+    req.log.error(err, "Failed to generate market summary");
+    res.status(503).json({ error: "Market summary temporarily unavailable" });
+  }
 });
 
 export default router;

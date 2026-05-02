@@ -178,6 +178,25 @@ export const GetFearGreedResponse = zod.object({
 });
 
 /**
+ * Aggregated headlines from major crypto news RSS feeds with sentiment scoring
+ * @summary Latest crypto news headlines
+ */
+export const getNewsQueryLimitDefault = 10;
+
+export const GetNewsQueryParams = zod.object({
+  limit: zod.coerce.number().default(getNewsQueryLimitDefault),
+});
+
+export const GetNewsResponseItem = zod.object({
+  title: zod.string(),
+  link: zod.string(),
+  pubDate: zod.string(),
+  source: zod.string(),
+  sentiment: zod.enum(["bullish", "bearish", "neutral"]),
+});
+export const GetNewsResponse = zod.array(GetNewsResponseItem);
+
+/**
  * @summary Historical Fear and Greed index
  */
 export const getFearGreedHistoryQueryLimitDefault = 30;

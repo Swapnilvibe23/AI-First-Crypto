@@ -6,7 +6,7 @@
 
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
 
-// Simple in-memory cache to avoid hitting rate limits (60 calls/min on free tier)
+// Cache stores data even after expiry so we can serve stale data on rate-limit errors
 const cache = new Map<string, { data: unknown; expiresAt: number }>();
 
 async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
@@ -16,17 +16,28 @@ async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
     return cached.data as T;
   }
 
-  const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-  });
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+    });
 
-  if (!res.ok) {
-    throw new Error(`CoinGecko error ${res.status}: ${await res.text()}`);
+    if (!res.ok) {
+      // On rate limit (429) or server error, return stale cached data if available
+      if ((res.status === 429 || res.status >= 500) && cached) {
+        return cached.data as T;
+      }
+      throw new Error(`CoinGecko error ${res.status}: ${await res.text()}`);
+    }
+
+    const data = await res.json() as T;
+    // Extend TTL on fresh data
+    cache.set(url, { data, expiresAt: now + ttlMs });
+    return data;
+  } catch (err) {
+    // Network error — return stale cache if available
+    if (cached) return cached.data as T;
+    throw err;
   }
-
-  const data = await res.json() as T;
-  cache.set(url, { data, expiresAt: now + ttlMs });
-  return data;
 }
 
 // Global market overview

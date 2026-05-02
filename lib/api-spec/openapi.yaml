@@ -16,6 +16,8 @@ tags:
     description: Coin data and details
   - name: sentiment
     description: Fear and Greed sentiment data
+  - name: news
+    description: Crypto news and sentiment headlines
 paths:
   /healthz:
     get:
@@ -177,6 +179,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FearGreed"
+
+  /news:
+    get:
+      operationId: getNews
+      tags: [news]
+      summary: Latest crypto news headlines
+      description: Aggregated headlines from major crypto news RSS feeds with sentiment scoring
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: List of news items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsItem"
 
   /sentiment/fear-greed/history:
     get:
@@ -390,6 +414,27 @@ components:
         - value_classification
         - timestamp
         - updated_at
+
+    NewsItem:
+      type: object
+      properties:
+        title:
+          type: string
+        link:
+          type: string
+        pubDate:
+          type: string
+        source:
+          type: string
+        sentiment:
+          type: string
+          enum: [bullish, bearish, neutral]
+      required:
+        - title
+        - link
+        - pubDate
+        - source
+        - sentiment
 
     FearGreedHistoryPoint:
       type: object

@@ -7,6 +7,8 @@ export * from "./generated/types/fearGreedHistoryPoint";
 export * from "./generated/types/globalMarket";
 export * from "./generated/types/healthStatus";
 export * from "./generated/types/marketSummary";
+export * from "./generated/types/newsItem";
+export * from "./generated/types/newsItemSentiment";
 export * from "./generated/types/pricePoint";
 export * from "./generated/types/topMovers";
 export * from "./generated/types/trendingCoin";

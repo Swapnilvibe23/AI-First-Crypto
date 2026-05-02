@@ -1,0 +1,18 @@
+/**
+ * News routes — aggregates RSS headlines from crypto news sources.
+ */
+import { Router, type IRouter } from "express";
+import { GetNewsQueryParams, GetNewsResponse } from "@workspace/api-zod";
+import { fetchNews } from "../lib/news";
+
+const router: IRouter = Router();
+
+// GET /news?limit=10
+router.get("/news", async (req, res): Promise<void> => {
+  const parsed = GetNewsQueryParams.safeParse(req.query);
+  const limit = parsed.success ? (parsed.data.limit ?? 10) : 10;
+  const items = await fetchNews(limit);
+  res.json(GetNewsResponse.parse(items));
+});
+
+export default router;

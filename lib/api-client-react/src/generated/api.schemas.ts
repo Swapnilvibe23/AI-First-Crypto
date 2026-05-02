@@ -82,6 +82,23 @@ export interface FearGreed {
   updated_at: string;
 }
 
+export type NewsItemSentiment =
+  (typeof NewsItemSentiment)[keyof typeof NewsItemSentiment];
+
+export const NewsItemSentiment = {
+  bullish: "bullish",
+  bearish: "bearish",
+  neutral: "neutral",
+} as const;
+
+export interface NewsItem {
+  title: string;
+  link: string;
+  pubDate: string;
+  source: string;
+  sentiment: NewsItemSentiment;
+}
+
 export interface FearGreedHistoryPoint {
   value: number;
   value_classification: string;
@@ -96,6 +113,10 @@ export type GetCoinsParams = {
 
 export type GetCoinHistoryParams = {
   days?: number;
+};
+
+export type GetNewsParams = {
+  limit?: number;
 };
 
 export type GetFearGreedHistoryParams = {

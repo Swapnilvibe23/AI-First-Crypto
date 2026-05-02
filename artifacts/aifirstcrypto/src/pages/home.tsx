@@ -1,10 +1,10 @@
-import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed } from "@workspace/api-client-react";
+import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
-import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle } from "lucide-react";
+import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
@@ -31,6 +31,7 @@ export default function Home() {
   const { data: trendingCoins, isLoading: loadingTrending } = useGetTrending();
   const { data: topMovers, isLoading: loadingMovers } = useGetTopMovers();
   const { data: fearGreed, isLoading: loadingFearGreed } = useGetFearGreed();
+  const { data: news, isLoading: loadingNews } = useGetNews({ limit: 12 });
 
   if (errorMarket) {
     return (
@@ -71,11 +72,11 @@ export default function Home() {
         </div>
       </section>
 
-      {(loadingMarket || loadingSummary || loadingTrending || loadingMovers || loadingFearGreed) ? (
+      {/* Global Market Overview */}
+      {loadingMarket ? (
         <DashboardSkeletons />
       ) : (
         <>
-          {/* Global Market Overview */}
           {globalMarket && (
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
@@ -257,6 +258,95 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
+          </div>
+
+          {/* News & Sentiment Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Newspaper className="h-6 w-6 text-primary" />
+                Latest Crypto News
+              </h2>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-positive" />Bullish</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-negative" />Bearish</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-muted-foreground" />Neutral</span>
+              </div>
+            </div>
+
+            {loadingNews ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-28 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : news && news.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {news.map((item, i) => {
+                  const sentimentColor =
+                    item.sentiment === "bullish"
+                      ? "border-l-positive bg-positive-muted/20"
+                      : item.sentiment === "bearish"
+                      ? "border-l-negative bg-negative-muted/20"
+                      : "border-l-muted-foreground bg-muted/10";
+                  const sentimentBadge =
+                    item.sentiment === "bullish"
+                      ? "text-positive bg-positive-muted"
+                      : item.sentiment === "bearish"
+                      ? "text-negative bg-negative-muted"
+                      : "text-muted-foreground bg-muted/50";
+                  const sentimentIcon =
+                    item.sentiment === "bullish" ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : item.sentiment === "bearish" ? (
+                      <TrendingDown className="h-3 w-3" />
+                    ) : null;
+
+                  const timeAgo = item.pubDate
+                    ? (() => {
+                        const diff = Date.now() - new Date(item.pubDate).getTime();
+                        const h = Math.floor(diff / 3_600_000);
+                        const m = Math.floor(diff / 60_000);
+                        if (h >= 24) return `${Math.floor(h / 24)}d ago`;
+                        if (h >= 1) return `${h}h ago`;
+                        return `${m}m ago`;
+                      })()
+                    : "";
+
+                  return (
+                    <a
+                      key={i}
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group flex flex-col gap-2 p-4 rounded-xl border border-l-4 border-border/50 hover:border-primary/40 transition-all duration-200 hover:shadow-md ${sentimentColor}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold leading-snug line-clamp-3 group-hover:text-primary transition-colors flex-1">
+                          {item.title}
+                        </p>
+                        <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="flex items-center justify-between mt-auto">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground font-medium">{item.source}</span>
+                          {timeAgo && (
+                            <>
+                              <span className="text-muted-foreground/40">·</span>
+                              <span className="text-xs text-muted-foreground">{timeAgo}</span>
+                            </>
+                          )}
+                        </div>
+                        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${sentimentBadge}`}>
+                          {sentimentIcon}
+                          {item.sentiment}
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </>
       )}
