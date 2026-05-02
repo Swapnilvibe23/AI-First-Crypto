@@ -5,11 +5,12 @@ import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
-import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap } from "lucide-react";
+import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap, Share2, Copy, Check, Twitter } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useMemo, useState } from "react";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
@@ -74,6 +75,157 @@ function DashboardSkeletons() {
         <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     </div>
+  );
+}
+
+const SITE_URL = "AIFirstCrypto.com";
+
+interface SnapshotShareProps {
+  marketCap: number;
+  marketCapChange: number;
+  btcDominance: number;
+  fearGreedValue: number | null;
+  fearGreedLabel: string | null;
+  topGainer: { symbol: string; change: number } | null;
+  topLoser: { symbol: string; change: number } | null;
+}
+
+function fearGreedEmoji(val: number | null): string {
+  if (val == null) return "📊";
+  if (val <= 25) return "😱";
+  if (val <= 45) return "😟";
+  if (val <= 55) return "😐";
+  if (val <= 75) return "😀";
+  return "🤑";
+}
+
+function buildSnapshotInstagram(p: SnapshotShareProps): string {
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const mcDir = p.marketCapChange >= 0 ? "📈" : "📉";
+  const fgLine = p.fearGreedValue != null
+    ? `${fearGreedEmoji(p.fearGreedValue)} Fear & Greed: ${p.fearGreedValue} — ${p.fearGreedLabel ?? ""}`
+    : null;
+  const gainerLine = p.topGainer ? `🚀 Top Gainer: ${p.topGainer.symbol.toUpperCase()} +${p.topGainer.change.toFixed(2)}%` : null;
+  const loserLine = p.topLoser ? `🔻 Biggest Drop: ${p.topLoser.symbol.toUpperCase()} ${p.topLoser.change.toFixed(2)}%` : null;
+
+  const lines = [
+    `📊 Daily Crypto Snapshot — ${today}`,
+    ``,
+    `💰 Market Cap: $${formatCompactNumber(p.marketCap)} (${mcDir} ${p.marketCapChange >= 0 ? "+" : ""}${p.marketCapChange.toFixed(2)}%)`,
+    `🔵 BTC Dominance: ${p.btcDominance.toFixed(1)}%`,
+    ...(fgLine ? [fgLine] : []),
+    ...(gainerLine ? [gainerLine] : []),
+    ...(loserLine ? [loserLine] : []),
+    ``,
+    `Get your daily snapshot at 👇`,
+    SITE_URL,
+    ``,
+    `#crypto #bitcoin #cryptotracker #dailycrypto #marketupdate #fearandgreed`,
+  ];
+  return lines.join("\n");
+}
+
+function buildSnapshotTweet(p: SnapshotShareProps): string {
+  const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const fg = p.fearGreedValue != null ? `${fearGreedEmoji(p.fearGreedValue)} ${p.fearGreedLabel}` : "";
+  const gainer = p.topGainer ? `🚀 ${p.topGainer.symbol.toUpperCase()} +${p.topGainer.change.toFixed(1)}%` : "";
+  const loser = p.topLoser ? `🔻 ${p.topLoser.symbol.toUpperCase()} ${p.topLoser.change.toFixed(1)}%` : "";
+  const parts = [fg, gainer, loser].filter(Boolean).join("  ·  ");
+  return `📊 Crypto Market ${today}\n\n💰 $${formatCompactNumber(p.marketCap)}  🔵 BTC ${p.btcDominance.toFixed(1)}%\n${parts}\n\nFull snapshot → ${SITE_URL}\n\n#crypto #dailycrypto`;
+}
+
+function ShareSnapshotButton(p: SnapshotShareProps) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const instagramText = useMemo(() => buildSnapshotInstagram(p), [p.marketCap, p.btcDominance, p.fearGreedValue, p.topGainer?.symbol, p.topLoser?.symbol]);
+  const tweetText = useMemo(() => buildSnapshotTweet(p), [p.marketCap, p.btcDominance, p.fearGreedValue, p.topGainer?.symbol, p.topLoser?.symbol]);
+
+  function copyInstagram() {
+    navigator.clipboard.writeText(instagramText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  function shareTwitter() {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, "_blank", "noopener,noreferrer");
+    setOpen(false);
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="rounded-full gap-1.5 text-xs h-8 border-border/60 text-primary">
+          <Share2 className="h-3.5 w-3.5" />
+          Share Snapshot
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end" sideOffset={8}>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+          Share Today's Market Snapshot
+        </p>
+        {/* Live mini-preview */}
+        <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 px-3 py-2 space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Market Cap</span>
+            <span className="font-bold">${formatCompactNumber(p.marketCap)}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">BTC Dominance</span>
+            <span className="font-bold">{p.btcDominance.toFixed(1)}%</span>
+          </div>
+          {p.fearGreedValue != null && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Fear & Greed</span>
+              <span className="font-bold">{fearGreedEmoji(p.fearGreedValue)} {p.fearGreedLabel}</span>
+            </div>
+          )}
+          {p.topGainer && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Top Gainer</span>
+              <span className="font-bold text-green-400">🚀 {p.topGainer.symbol.toUpperCase()} +{p.topGainer.change.toFixed(2)}%</span>
+            </div>
+          )}
+        </div>
+        <div className="space-y-1.5">
+          <button
+            onClick={copyInstagram}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left border ${
+              copied ? "bg-green-500/10 text-green-400 border-green-500/30" : "hover:bg-muted/60 border-transparent"
+            }`}
+          >
+            {copied ? (
+              <Check className="h-4 w-4 flex-shrink-0 text-green-400" />
+            ) : (
+              <div className="h-4 w-4 flex-shrink-0 rounded-sm bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+                <Copy className="h-2.5 w-2.5 text-white" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="font-semibold text-sm leading-tight">{copied ? "Copied!" : "Copy for Instagram"}</div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">
+                {copied ? "Paste into your caption or story" : "Full snapshot + hashtags"}
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={shareTwitter}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted/60 transition-colors text-left border border-transparent"
+          >
+            <div className="h-4 w-4 flex-shrink-0 rounded-sm bg-black flex items-center justify-center border border-border">
+              <Twitter className="h-2.5 w-2.5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold text-sm leading-tight">Share on X (Twitter)</div>
+              <div className="text-xs text-muted-foreground leading-tight mt-0.5">Pre-filled daily market tweet</div>
+            </div>
+            <Share2 className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 ml-auto" />
+          </button>
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-3 px-1 leading-snug">Not financial advice.</p>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -211,14 +363,33 @@ export default function Home() {
             {marketSummary && (
               <Card className="col-span-1 lg:col-span-2 border-primary/20 bg-gradient-to-br from-card to-primary/5">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Activity className="h-5 w-5 text-primary" />
-                    Today's Market Summary
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    Generated at {new Date(marketSummary.generated_at).toLocaleTimeString()}
-                  </CardDescription>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="flex items-center gap-2 text-xl">
+                        <Activity className="h-5 w-5 text-primary" />
+                        Today's Market Summary
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-1 mt-1">
+                        <Clock className="h-3 w-3" />
+                        Generated at {new Date(marketSummary.generated_at).toLocaleTimeString()}
+                      </CardDescription>
+                    </div>
+                    {globalMarket && (
+                      <ShareSnapshotButton
+                        marketCap={globalMarket.total_market_cap_usd}
+                        marketCapChange={globalMarket.market_cap_change_percentage_24h}
+                        btcDominance={globalMarket.btc_dominance}
+                        fearGreedValue={fearGreed?.value ?? null}
+                        fearGreedLabel={fearGreed?.value_classification ?? null}
+                        topGainer={topMovers?.gainers[0]
+                          ? { symbol: topMovers.gainers[0].symbol, change: topMovers.gainers[0].price_change_percentage_24h ?? 0 }
+                          : null}
+                        topLoser={topMovers?.losers[0]
+                          ? { symbol: topMovers.losers[0].symbol, change: topMovers.losers[0].price_change_percentage_24h ?? 0 }
+                          : null}
+                      />
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-base leading-relaxed text-foreground/90">

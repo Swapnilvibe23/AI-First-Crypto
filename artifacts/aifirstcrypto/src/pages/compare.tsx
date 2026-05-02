@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice, formatPercentage, formatCompactNumber } from "@/lib/format";
-import { TrendingUp, TrendingDown, X, Plus, GitCompareArrows } from "lucide-react";
+import { TrendingUp, TrendingDown, X, Plus, GitCompareArrows, AlertCircle, RefreshCw } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import {
   ResponsiveContainer,
@@ -186,6 +186,8 @@ export default function Compare() {
   }, [selectedIds, histories, days]);
 
   const isLoadingAny = histories.some((h, i) => i < selectedIds.length && h.isLoading);
+  const hasHistoryError = histories.some((h, i) => i < selectedIds.length && h.isError);
+  const refetchHistories = () => histories.forEach((h) => h.refetch?.());
 
   function addCoin(id: string) {
     if (selectedIds.length >= 3 || selectedIds.includes(id)) return;
@@ -293,6 +295,17 @@ export default function Compare() {
           <CardContent>
             {isLoadingAny ? (
               <Skeleton className="h-72 w-full rounded-xl" />
+            ) : hasHistoryError ? (
+              <div className="h-72 flex flex-col items-center justify-center gap-3 text-center px-4">
+                <AlertCircle className="h-8 w-8 text-muted-foreground/60" />
+                <div>
+                  <p className="text-sm font-semibold">Chart data temporarily unavailable</p>
+                  <p className="text-xs text-muted-foreground mt-1">The data provider may be rate-limiting requests. It refreshes automatically.</p>
+                </div>
+                <Button variant="outline" size="sm" onClick={refetchHistories} className="gap-2 mt-1">
+                  <RefreshCw className="h-3.5 w-3.5" /> Try again
+                </Button>
+              </div>
             ) : chartData.length === 0 ? (
               <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">
                 No data available for selected period
