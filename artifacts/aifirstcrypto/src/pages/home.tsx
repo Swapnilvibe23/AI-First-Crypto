@@ -6,7 +6,7 @@ import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatCompactNumber, formatPercentage } from "@/lib/format";
-import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap, Share2, Copy, Check, Twitter } from "lucide-react";
+import { ArrowRight, ChevronRight, TrendingUp, TrendingDown, Clock, Activity, AlertCircle, Newspaper, ExternalLink, Zap, Share2, Copy, Check, Twitter, BarChart2, BrainCircuit, ShieldCheck } from "lucide-react";
 import { InfoTooltip } from "@/components/info-tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
@@ -599,6 +599,53 @@ export default function Home() {
             </Button>
           </Link>
         </div>
+      </section>
+
+      {/* How it works */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          {
+            icon: BarChart2,
+            step: "01",
+            title: "Live data, every refresh",
+            body: "Prices, market cap, volume, and top movers pull directly from CoinGecko — no stale numbers, no ads.",
+            color: "text-blue-400",
+            border: "border-blue-500/20",
+            bg: "from-blue-500/8 to-card",
+          },
+          {
+            icon: BrainCircuit,
+            step: "02",
+            title: "One clear AI signal",
+            body: "The AIFirst Signal blends Fear & Greed, BTC dominance, and 24h momentum into a single plain-English verdict.",
+            color: "text-primary",
+            border: "border-primary/20",
+            bg: "from-primary/8 to-card",
+          },
+          {
+            icon: ShieldCheck,
+            step: "03",
+            title: "Act with confidence",
+            body: "No login, no wallet, no trading. Just the clearest picture of the market — so you always know what's going on.",
+            color: "text-emerald-400",
+            border: "border-emerald-500/20",
+            bg: "from-emerald-500/8 to-card",
+          },
+        ].map(({ icon: Icon, step, title, body, color, border, bg }) => (
+          <div
+            key={step}
+            className={`relative rounded-2xl border ${border} bg-gradient-to-br ${bg} p-6 flex flex-col gap-3`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-card border ${border} ${color} flex-shrink-0`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <span className="text-xs font-bold text-muted-foreground/50 tabular-nums tracking-widest">{step}</span>
+            </div>
+            <h3 className="text-base font-bold leading-snug">{title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{body}</p>
+          </div>
+        ))}
       </section>
 
       {/* Live price ticker */}
