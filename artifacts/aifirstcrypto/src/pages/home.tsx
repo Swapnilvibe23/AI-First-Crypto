@@ -123,7 +123,7 @@ function buildSnapshotInstagram(p: SnapshotShareProps): string {
     ...(gainerLine ? [gainerLine] : []),
     ...(loserLine ? [loserLine] : []),
     ``,
-    `Get your daily snapshot at 👇`,
+    `Get your daily pulse at 👇`,
     SITE_URL,
     ``,
     `#crypto #bitcoin #cryptotracker #dailycrypto #marketupdate #fearandgreed`,
@@ -137,7 +137,7 @@ function buildSnapshotTweet(p: SnapshotShareProps): string {
   const gainer = p.topGainer ? `🚀 ${p.topGainer.symbol.toUpperCase()} +${p.topGainer.change.toFixed(1)}%` : "";
   const loser = p.topLoser ? `🔻 ${p.topLoser.symbol.toUpperCase()} ${p.topLoser.change.toFixed(1)}%` : "";
   const parts = [fg, gainer, loser].filter(Boolean).join("  ·  ");
-  return `📊 Crypto Market ${today}\n\n💰 $${formatCompactNumber(p.marketCap)}  🔵 BTC ${p.btcDominance.toFixed(1)}%\n${parts}\n\nFull snapshot → ${SITE_URL}\n\n#crypto #dailycrypto`;
+  return `📊 Crypto Market ${today}\n\n💰 $${formatCompactNumber(p.marketCap)}  🔵 BTC ${p.btcDominance.toFixed(1)}%\n${parts}\n\nFull pulse → ${SITE_URL}\n\n#crypto #dailycrypto`;
 }
 
 function ShareSnapshotButton(p: SnapshotShareProps) {
@@ -211,7 +211,7 @@ function ShareSnapshotButton(p: SnapshotShareProps) {
             <div className="min-w-0">
               <div className="font-semibold text-sm leading-tight">{copied ? "Copied!" : "Copy for Instagram"}</div>
               <div className="text-xs text-muted-foreground leading-tight mt-0.5">
-                {copied ? "Paste into your caption or story" : "Full snapshot + hashtags"}
+                {copied ? "Paste into your caption or story" : "Full pulse + hashtags"}
               </div>
             </div>
           </button>
@@ -524,7 +524,7 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
 
 export default function Home() {
   useSeoMeta({
-    title: "AIFirstCrypto — Your Daily Crypto Snapshot",
+    title: "AIFirstCrypto — Your Daily Crypto Pulse",
     description: "Live crypto prices, Fear & Greed index, top movers, and the latest news — all in one beginner-friendly dashboard. No login, no noise.",
   });
   const { data: globalMarket, isLoading: loadingMarket, error: errorMarket } = useGetGlobalMarket();
@@ -1122,7 +1122,7 @@ export default function Home() {
               <AccordionItem value="faq-3">
                 <AccordionTrigger>Do I need an account or wallet?</AccordionTrigger>
                 <AccordionContent>
-                  No account, login, or wallet is needed. You can browse the dashboard freely and use it as a quick market snapshot.
+                  No account, login, or wallet is needed. You can browse the dashboard freely and use it as a quick market pulse.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="faq-4">
