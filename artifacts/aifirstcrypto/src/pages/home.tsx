@@ -14,7 +14,7 @@ import { MarketDominanceChart } from "@/components/market-dominance-chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LineChart, Line, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TickerStrip } from "@/components/ticker-strip";
 import { Reveal } from "@/components/reveal";
 import { AIVerdictCard } from "@/components/ai-verdict-card";
@@ -81,6 +81,39 @@ function DashboardSkeletons() {
         <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     </div>
+  );
+}
+
+const HERO_HOOKS = [
+  { type: "word", label: "pulse" },
+  { type: "logo", label: "AI First Crypto" },
+] as const;
+
+function HeroHook() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setIndex((current) => (current + 1) % HERO_HOOKS.length);
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const current = HERO_HOOKS[index];
+
+  return (
+    <span className="hero-hook inline-flex items-center align-middle">
+      {current.type === "word" ? (
+        <span key={current.label} className="hero-hook-item text-primary">
+          {current.label}
+        </span>
+      ) : (
+        <span key={current.label} className="hero-hook-item hero-hook-logo inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-primary">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-primary-foreground">AI</span>
+          <span className="text-sm font-semibold tracking-tight">{current.label}</span>
+        </span>
+      )}
+    </span>
   );
 }
 
@@ -584,7 +617,7 @@ export default function Home() {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-          Your daily crypto <span className="text-primary">pulse</span>
+          Your daily crypto <HeroHook />
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
           Live prices, market sentiment, and the latest news — all in one place. Clear signals, no noise.

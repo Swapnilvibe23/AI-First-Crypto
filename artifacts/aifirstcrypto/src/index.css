@@ -267,6 +267,30 @@
   background-size: 48px 48px;
 }
 
+@keyframes hero-hook-swap {
+  0%, 45% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  55%, 100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hero-hook {
+  min-width: 5.5ch;
+  justify-content: center;
+}
+
+.hero-hook-item {
+  animation: hero-hook-swap 3s ease-in-out infinite;
+}
+
+.hero-hook-logo {
+  animation-duration: 3s;
+}
+
 /* ── Card glow on hover ────────────────────────────────────────────────── */
 .card-glow {
   transition: box-shadow 0.25s ease, border-color 0.25s ease;
