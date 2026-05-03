@@ -1,4 +1,4 @@
-import { ExternalLink, Shield, TrendingUp, Zap, Globe, Star, CheckCircle2, Info } from "lucide-react";
+import { ExternalLink, Shield, TrendingUp, Zap, Globe, Star, CheckCircle2 } from "lucide-react";
 import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -169,13 +169,6 @@ export default function Exchanges() {
         <p className="text-lg text-muted-foreground mt-2 max-w-2xl">
           Not all exchanges are the same. We compare the biggest platforms so you can find the right one for your needs — beginner-friendly, low fees, or full DeFi access.
         </p>
-        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <Info className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>
-            Some links on this page are affiliate links — we may earn a commission if you sign up. This never influences our assessments.{" "}
-            <Link href="/disclaimer" className="underline hover:text-foreground">See full disclosure →</Link>
-          </span>
-        </div>
       </section>
 
       {/* Quick stats banner */}
@@ -280,9 +273,6 @@ export default function Exchanges() {
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 </a>
-                <p className="text-[10px] text-muted-foreground text-center mt-2">
-                  Affiliate link — we may earn a commission
-                </p>
               </div>
             </Card>
           ))}
@@ -347,10 +337,6 @@ export default function Exchanges() {
             </Button>
           </a>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Affiliate links · We may earn a commission ·{" "}
-          <Link href="/disclaimer" className="underline">Full disclosure</Link>
-        </p>
       </section>
 
       {/* Risk disclaimer */}
