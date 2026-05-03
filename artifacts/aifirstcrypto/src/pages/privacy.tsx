@@ -59,7 +59,9 @@ export default function Privacy() {
         {
           title: "4. Cookies",
           body: [
-            "AIFirstCrypto does not use tracking cookies. We may use sessionStorage or localStorage to store your preferences locally in your browser. No data from localStorage is sent to our servers.",
+            "AIFirstCrypto does not use tracking cookies for advertising or analytics. We do use a small consent banner so you can accept or decline non-essential cookie-related behavior on first visit.",
+            "If you accept, we store your choice in localStorage under a consent key so the banner does not keep reappearing. If you decline, we store that choice locally as well.",
+            "We may also use sessionStorage or localStorage to store your preferences locally in your browser. No data from localStorage is sent to our servers.",
             "Third-party services embedded in our site (such as newsletter providers) may set their own cookies. You can control cookies through your browser settings.",
           ],
         },

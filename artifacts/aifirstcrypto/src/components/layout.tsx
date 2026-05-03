@@ -12,7 +12,7 @@ import {
   Calculator,
   ArrowRightLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAlerts } from "@/hooks/use-alerts";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -26,8 +26,24 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cookieConsent, setCookieConsent] = useState<"accepted" | "declined" | null>(null);
   const { alerts } = useAlerts();
   const alertCount = alerts.length;
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("cookie-consent");
+    if (stored === "accepted" || stored === "declined") setCookieConsent(stored);
+  }, []);
+
+  function acceptCookies() {
+    window.localStorage.setItem("cookie-consent", "accepted");
+    setCookieConsent("accepted");
+  }
+
+  function declineCookies() {
+    window.localStorage.setItem("cookie-consent", "declined");
+    setCookieConsent("declined");
+  }
 
   const links = [
     { href: "/", label: "Home", icon: Activity },
@@ -155,6 +171,27 @@ export function Layout({ children }: LayoutProps) {
       <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
         {children}
       </main>
+
+      {!cookieConsent && (
+        <div className="fixed bottom-4 left-4 right-4 z-[60] mx-auto max-w-3xl rounded-2xl border border-border bg-card/95 p-4 shadow-2xl backdrop-blur md:bottom-6 md:left-6 md:right-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="font-semibold">We use cookies</p>
+              <p className="text-sm text-muted-foreground">
+                We use essential cookies and local storage to keep your preferences working. See our Privacy Policy for details.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={declineCookies}>
+                Decline
+              </Button>
+              <Button size="sm" onClick={acceptCookies}>
+                Accept
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="border-t border-border/50 pt-10 pb-8 bg-muted/20">
         <div className="container mx-auto px-4 max-w-7xl">
