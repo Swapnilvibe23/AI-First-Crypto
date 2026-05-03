@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { MarketDominanceChart } from "@/components/market-dominance-chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LineChart, Line, ResponsiveContainer, Tooltip as ReTooltip } from "recharts";
 import { useMemo, useState } from "react";
 import { TickerStrip } from "@/components/ticker-strip";
@@ -1095,6 +1096,50 @@ export default function Home() {
               )}
             </section>
           )}
+
+        <Reveal>
+          <section className="rounded-2xl border border-border/60 bg-card p-6 md:p-8">
+            <div className="max-w-2xl">
+              <h2 className="text-2xl font-bold">FAQ</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Quick answers for beginners using AIFirstCrypto.
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="mt-4">
+              <AccordionItem value="faq-1">
+                <AccordionTrigger>Is AIFirstCrypto financial advice?</AccordionTrigger>
+                <AccordionContent>
+                  No. It is an educational dashboard that summarizes public market data, sentiment, and news in plain English.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="faq-2">
+                <AccordionTrigger>Where does the data come from?</AccordionTrigger>
+                <AccordionContent>
+                  Live pricing and market data come from CoinGecko, while the Fear & Greed index comes from Alternative.me.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="faq-3">
+                <AccordionTrigger>Do I need an account or wallet?</AccordionTrigger>
+                <AccordionContent>
+                  No account, login, or wallet is needed. You can browse the dashboard freely and use it as a quick market snapshot.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="faq-4">
+                <AccordionTrigger>How should beginners use the Fear & Greed page?</AccordionTrigger>
+                <AccordionContent>
+                  Use it as a sentiment guide, not a buy or sell signal. Extreme fear and greed can help you understand market mood and timing.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="faq-5">
+                <AccordionTrigger>Why do some pages include affiliate links?</AccordionTrigger>
+                <AccordionContent>
+                  Some exchange pages use affiliate links to support the project. Legal pages explain this clearly, and recommendations are still informational only.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+        </Reveal>
 
           {/* News & Sentiment Section */}
           <Reveal>
