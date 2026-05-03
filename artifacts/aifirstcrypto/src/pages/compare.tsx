@@ -216,7 +216,7 @@ export default function Compare() {
       </div>
 
       {/* Coin selector */}
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+      <Card className="relative z-20 bg-card/50 backdrop-blur-sm border-border/50">
         <CardContent className="p-5 space-y-4">
           {/* Selected chips */}
           <div className="flex flex-wrap gap-2 min-h-[40px]">
@@ -271,7 +271,7 @@ export default function Compare() {
 
       {/* Chart */}
       {selectedIds.length > 0 && (
-        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <Card className="relative z-10 bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
