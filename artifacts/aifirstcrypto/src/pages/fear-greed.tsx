@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useGetFearGreed, useGetFearGreedHistory, useGetCoinHistory } from "@workspace/api-client-react";
+import { useGetFearGreed, useGetFearGreedHistory, useGetCoinHistory, useGetTrending } from "@workspace/api-client-react";
 import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,9 @@ import {
   ComposedChart,
   Line,
   Legend,
+  BarChart,
+  Bar,
+  Cell,
 } from "recharts";
 import { FearGreedGauge } from "@/components/fear-greed-gauge";
 import { formatPrice, formatCompactNumber } from "@/lib/format";
@@ -67,6 +70,53 @@ function resampleToDaily(prices: { timestamp: number; price: number }[]) {
   return byDay;
 }
 
+const TREND_COLORS = [
+  "#f59e0b", "#f97316", "#ef4444", "#ec4899",
+  "#a855f7", "#8b5cf6", "#6366f1", "#3b82f6",
+  "#06b6d4", "#10b981",
+];
+
+const makeTrendingTick = (coins: { symbol: string; thumb: string }[]) =>
+  function TrendingTick(props: { x?: number; y?: number; payload?: { value: string } }) {
+    const { x = 0, y = 0, payload } = props;
+    const coin = coins.find((c) => c.symbol === payload?.value);
+    return (
+      <g transform={`translate(${x},${y})`}>
+        {coin?.thumb && (
+          <image href={coin.thumb} x={-66} y={-11} width={22} height={22} style={{ borderRadius: "50%" }} />
+        )}
+        <text x={-40} y={4} fontSize={11} fill="hsl(var(--muted-foreground))" textAnchor="start">
+          {payload?.value}
+        </text>
+      </g>
+    );
+  };
+
+const TrendingTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { name: string; symbol: string; rank: number; marketCapRank: number; buzzFactor: number } }[] }) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-lg border border-border bg-background/95 backdrop-blur px-3 py-2.5 shadow-xl text-xs space-y-1.5">
+      <p className="font-semibold text-foreground">{d.name} <span className="text-muted-foreground">({d.symbol})</span></p>
+      <div className="flex gap-4">
+        <div>
+          <p className="text-muted-foreground">Trending Rank</p>
+          <p className="font-bold text-foreground">#{d.rank}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Market Cap Rank</p>
+          <p className="font-bold text-foreground">#{d.marketCapRank}</p>
+        </div>
+        <div>
+          <p className="text-muted-foreground">Buzz Factor</p>
+          <p className="font-bold text-amber-400">{d.buzzFactor.toFixed(1)}×</p>
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground italic">Buzz = how much a coin is searched vs. its size. Higher = more hype per market cap.</p>
+    </div>
+  );
+};
+
 const CorrelationTooltip = ({
   active,
   payload,
@@ -104,6 +154,7 @@ export default function FearGreed() {
   const { data: fearGreed, isLoading: loadingCurrent } = useGetFearGreed();
   const { data: history, isLoading: loadingHistory } = useGetFearGreedHistory({ limit: period.limit });
   const { data: btcHistory, isLoading: loadingBtc } = useGetCoinHistory("bitcoin", { days: period.days });
+  const { data: trending, isLoading: loadingTrending } = useGetTrending();
 
   // Fear & Greed area chart (reversed to chronological order)
   const fgChartData = history
@@ -134,6 +185,25 @@ export default function FearGreed() {
   }, [history, btcHistory]);
 
   const loadingCorrelation = loadingHistory || loadingBtc;
+
+  // Trending search chart data (top 10)
+  const trendingChartData = useMemo(() => {
+    if (!trending) return [];
+    return trending.slice(0, 10).map((coin, index) => ({
+      symbol: coin.symbol.toUpperCase(),
+      name: coin.name,
+      rank: index + 1,
+      score: 10 - index,
+      marketCapRank: coin.market_cap_rank ?? 999,
+      buzzFactor: (coin.market_cap_rank ?? 999) / (index + 1),
+      thumb: coin.thumb,
+    }));
+  }, [trending]);
+
+  const trendingTickComponent = useMemo(
+    () => makeTrendingTick(trendingChartData.map((c) => ({ symbol: c.symbol, thumb: c.thumb }))),
+    [trendingChartData]
+  );
 
   // Stats for the correlation section
   const avgFg = correlationData.length
@@ -415,6 +485,95 @@ export default function FearGreed() {
               </ResponsiveContainer>
               <p className="text-xs text-muted-foreground mt-3 text-center">
                 Blue line = Fear &amp; Greed score (left axis) · Orange area = Bitcoin price (right axis)
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+      {/* Trending Search Spotlight */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                Trending Search Spotlight
+                <InfoTooltip content="The top 10 most-searched coins on CoinGecko right now. The Buzz Factor shows how much a coin is being searched relative to its market cap size — a high buzz on a small coin means outsized hype." />
+              </CardTitle>
+              <CardDescription>
+                Most searched coins on CoinGecko · Live data · Refreshes every 2 min
+              </CardDescription>
+            </div>
+            {!loadingTrending && trendingChartData.length > 0 && (
+              <div className="text-right text-sm">
+                <p className="text-muted-foreground text-xs uppercase tracking-wide">Top Buzz Coin</p>
+                <p className="font-bold text-amber-400">
+                  {trendingChartData.slice().sort((a, b) => b.buzzFactor - a.buzzFactor)[0]?.name}
+                  {" "}
+                  <span className="text-muted-foreground font-normal text-xs">
+                    ({trendingChartData.slice().sort((a, b) => b.buzzFactor - a.buzzFactor)[0]?.buzzFactor.toFixed(0)}×)
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loadingTrending ? (
+            <Skeleton className="h-80 w-full" />
+          ) : trendingChartData.length === 0 ? (
+            <div className="h-80 flex items-center justify-center text-muted-foreground text-sm">
+              No trending data available
+            </div>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={340}>
+                <BarChart
+                  layout="vertical"
+                  data={trendingChartData}
+                  margin={{ top: 4, right: 60, left: 72, bottom: 4 }}
+                  barCategoryGap="20%"
+                >
+                  <XAxis
+                    type="number"
+                    domain={[0, 10]}
+                    hide
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="symbol"
+                    width={72}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={trendingTickComponent}
+                  />
+                  <Tooltip content={<TrendingTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} />
+                  <Bar dataKey="score" radius={[0, 6, 6, 0]} maxBarSize={26}>
+                    {trendingChartData.map((entry, index) => (
+                      <Cell key={entry.symbol} fill={TREND_COLORS[index] ?? "#6366f1"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Buzz Factor legend row */}
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {trendingChartData.slice(0, 5).map((coin, i) => (
+                  <div key={coin.symbol} className="flex flex-col items-center gap-1 p-2 rounded-lg bg-muted/40 text-center">
+                    <div className="flex items-center gap-1.5">
+                      <img src={coin.thumb} alt={coin.name} className="w-5 h-5 rounded-full" />
+                      <span className="text-xs font-semibold">{coin.symbol}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">Buzz</span>
+                    <span className="text-xs font-bold" style={{ color: TREND_COLORS[i] }}>
+                      {coin.buzzFactor.toFixed(1)}×
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">MC #{coin.marketCapRank}</span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground mt-3 text-center">
+                Bar length = trending intensity (rank #1 is longest) · Hover a bar for full details · Source: CoinGecko
               </p>
             </>
           )}
