@@ -596,11 +596,6 @@ export default function Home() {
               View Live Rates <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/watchlist">
-            <Button size="lg" variant="secondary" className="rounded-full">
-              My Watchlist
-            </Button>
-          </Link>
         </div>
       </section>
 
@@ -1366,6 +1361,15 @@ export default function Home() {
           </Reveal>
         </>
       )}
+
+      <div className="mt-8 border-t border-border/50 pt-6">
+        <div className="mx-auto max-w-5xl rounded-2xl border border-border/60 bg-card p-4 text-center">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Advertisement</div>
+          <div className="min-h-[90px] flex items-center justify-center rounded-xl border border-dashed border-border/50 bg-muted/30 text-sm text-muted-foreground">
+            Google AdSense placement
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

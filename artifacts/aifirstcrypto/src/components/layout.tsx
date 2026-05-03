@@ -4,7 +4,6 @@ import {
   Wallet, 
   TrendingUp, 
   Activity, 
-  Star, 
   BookOpen,
   Menu,
   X,
@@ -38,7 +37,6 @@ export function Layout({ children }: LayoutProps) {
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/dca", label: "DCA Calc", icon: Calculator },
     { href: "/exchanges", label: "Exchanges", icon: ArrowRightLeft },
-    { href: "/watchlist", label: "Watchlist", icon: Star },
     { href: "/resources", label: "Resources", icon: BookOpen },
   ];
 
@@ -60,7 +58,6 @@ export function Layout({ children }: LayoutProps) {
           <nav className="hidden md:flex items-center gap-6">
             {links.map((link) => {
               const isActive = location === link.href;
-              const isWatchlist = link.href === "/watchlist";
               return (
                 <Link
                   key={link.href}
@@ -70,11 +67,6 @@ export function Layout({ children }: LayoutProps) {
                   }`}
                 >
                   {link.label}
-                  {isWatchlist && alertCount > 0 && (
-                    <span className="inline-flex items-center justify-center h-4 min-w-4 px-1 text-[10px] font-bold bg-red-500 text-white rounded-full leading-none">
-                      {alertCount > 9 ? "9+" : alertCount}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -85,37 +77,33 @@ export function Layout({ children }: LayoutProps) {
             {/* Alert bell — always visible, disappears when 0 alerts */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href="/watchlist">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-9 w-9"
-                    onClick={closeMenu}
-                    aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
-                  >
-                    <Bell
-                      className={`h-4.5 w-4.5 transition-colors ${
-                        alertCount > 0
-                          ? "text-foreground"
-                          : "text-muted-foreground/50"
-                      }`}
-                    />
-                    {alertCount > 0 && (
-                      <>
-                        {/* Pulse ring */}
-                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
-                        {/* Solid dot / count */}
-                        <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
-                          {alertCount > 9 ? "" : alertCount}
-                        </span>
-                      </>
-                    )}
-                  </Button>
-                </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative h-9 w-9"
+                  onClick={closeMenu}
+                  aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
+                >
+                  <Bell
+                    className={`h-4.5 w-4.5 transition-colors ${
+                      alertCount > 0
+                        ? "text-foreground"
+                        : "text-muted-foreground/50"
+                    }`}
+                  />
+                  {alertCount > 0 && (
+                    <>
+                      <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
+                      <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
+                        {alertCount > 9 ? "" : alertCount}
+                      </span>
+                    </>
+                  )}
+                </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
                 {alertCount > 0
-                  ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""} — tap to view`
+                  ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}`
                   : "No active price alerts"}
               </TooltipContent>
             </Tooltip>
@@ -138,7 +126,6 @@ export function Layout({ children }: LayoutProps) {
             <nav className="flex flex-col p-4 space-y-1">
               {links.map((link) => {
                 const isActive = location === link.href;
-                const isWatchlist = link.href === "/watchlist";
                 const Icon = link.icon;
                 return (
                   <Link
@@ -155,12 +142,6 @@ export function Layout({ children }: LayoutProps) {
                       <Icon className="h-4 w-4 flex-shrink-0" />
                       {link.label}
                     </span>
-                    {isWatchlist && alertCount > 0 && (
-                      <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full leading-none">
-                        {alertCount > 9 ? "9+" : alertCount}
-                        <Bell className="h-3 w-3 ml-0.5" />
-                      </span>
-                    )}
                   </Link>
                 );
               })}
@@ -218,7 +199,6 @@ export function Layout({ children }: LayoutProps) {
               <ul className="space-y-2">
                 {[
                   { href: "/exchanges", label: "Exchanges" },
-                  { href: "/watchlist", label: "My Watchlist" },
                   { href: "/resources", label: "Resources" },
                 ].map(l => (
                   <li key={l.href}>
