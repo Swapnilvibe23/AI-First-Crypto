@@ -577,6 +577,7 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[110px]" />
           <div className="absolute -bottom-28 -left-28 w-96 h-96 rounded-full bg-indigo-500/7 blur-[90px]" />
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[760px] h-[420px] rounded-full bg-blue-500/10 blur-[120px]" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-blue-400/4 blur-[80px]" />
           <div className="absolute inset-0 hero-grid" />
         </div>
