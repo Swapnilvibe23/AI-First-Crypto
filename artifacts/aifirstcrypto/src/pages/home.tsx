@@ -571,7 +571,7 @@ export default function Home() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
       {/* Hero Section */}
-      <section className="relative py-10 md:py-16 flex flex-col gap-4 overflow-hidden">
+      <section className="relative py-10 md:py-16 flex flex-col items-center gap-4 overflow-hidden text-center">
         {/* Background: mesh grid + glowing orbs */}
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[110px]" />
@@ -587,7 +587,7 @@ export default function Home() {
           Live prices, market sentiment, and the latest news — all in one place. Clear signals, no noise.
         </p>
 
-        <div className="flex flex-wrap gap-3 mt-4">
+        <div className="flex flex-wrap justify-center gap-3 mt-4">
           <Link href="/rates">
             <Button size="lg" className="rounded-full font-bold shadow-lg shadow-primary/20">
               View Live Rates <ArrowRight className="ml-2 h-4 w-4" />
