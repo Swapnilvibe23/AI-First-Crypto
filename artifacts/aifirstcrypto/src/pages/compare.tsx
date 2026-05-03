@@ -223,7 +223,10 @@ export default function Compare() {
           <GitCompareArrows className="h-8 w-8 text-primary" />
           Compare Coins
         </h1>
-        <p className="text-muted-foreground mt-1">Overlay price performance for up to 3 cryptocurrencies</p>
+        <p className="text-muted-foreground mt-1 flex items-center gap-1.5">
+          Overlay price performance for up to 3 cryptocurrencies
+          <InfoTooltip content="After you select a coin, please wait up to 30 seconds for the price history to load before changing the comparison again." />
+        </p>
       </div>
 
       {/* Coin selector */}
