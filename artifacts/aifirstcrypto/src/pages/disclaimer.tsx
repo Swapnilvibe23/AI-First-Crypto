@@ -32,6 +32,13 @@ export default function Disclaimer() {
 
       {[
         {
+          title: "No Investment Advice",
+          body: [
+            "The information provided on this website does not constitute investment advice, financial advice, trading advice, or any other sort of advice and you should not treat any of the website's content as such.",
+            "AIFirstCrypto does not recommend that any cryptocurrency should be bought, sold, or held by you. Do conduct your own due diligence and consult your financial advisor before making any investment decisions.",
+          ],
+        },
+        {
           title: "Not Financial Advice",
           body: [
             SITE + " is an educational and informational platform. All content — including market data, AI-generated summaries, DCA simulations, Fear & Greed analysis, and commentary — is provided for general informational purposes only.",
