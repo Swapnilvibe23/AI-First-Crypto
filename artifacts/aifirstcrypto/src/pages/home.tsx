@@ -584,7 +584,7 @@ export default function Home() {
         </div>
 
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-          Your daily crypto <span className="text-primary">snapshot</span>
+          Your daily crypto <span className="text-primary">pulse</span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
           Live prices, market sentiment, and the latest news — all in one place. Clear signals, no noise.
