@@ -25,8 +25,10 @@ import { formatPrice, formatCompactNumber } from "@/lib/format";
 import { InfoTooltip } from "@/components/info-tooltip";
 
 const PERIOD_OPTIONS = [
-  { label: "30D", days: 30, limit: 30 },
-  { label: "90D", days: 90, limit: 90 },
+  { label: "7D",  days: 7,   limit: 7   },
+  { label: "30D", days: 30,  limit: 30  },
+  { label: "90D", days: 90,  limit: 90  },
+  { label: "1Y",  days: 365, limit: 365 },
 ] as const;
 
 type Period = typeof PERIOD_OPTIONS[number];
