@@ -316,7 +316,7 @@ export default function Compare() {
                 No data available for selected period
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={340}>
                 <LineChart data={chartData} margin={{ top: 4, right: 16, bottom: 4, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
                   <XAxis
@@ -373,78 +373,56 @@ export default function Compare() {
             <CardTitle className="text-xl">Side-by-Side Metrics</CardTitle>
             <CardDescription>Key figures at a glance</CardDescription>
           </CardHeader>
-          <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left text-muted-foreground font-medium px-5 py-3 w-36">Metric</th>
-                  {selectedCoins.map((coin, i) => (
-                    <th key={coin.id} className="text-right px-5 py-3 font-semibold" style={{ color: COIN_COLORS[i] }}>
-                      <div className="flex items-center justify-end gap-2">
-                        <img src={coin.image} alt={coin.name} className="h-5 w-5 rounded-full" />
-                        {coin.symbol.toUpperCase()}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    label: "Price",
-                    tooltip: null as string | null,
-                    format: (c: CoinRow) => formatPrice(c.current_price),
-                    highlight: false,
-                  },
-                  {
-                    label: "24h Change",
-                    tooltip: "Price change percentage over the last 24 hours.",
-                    format: (c: CoinRow) => formatPercentage(c.price_change_percentage_24h),
-                    highlight: true,
-                    positive: (c: CoinRow) => (c.price_change_percentage_24h ?? 0) >= 0,
-                  },
-                  {
-                    label: "Market Cap",
-                    tooltip: "Total market value = price × circulating supply. Higher = larger, more established coin.",
-                    format: (c: CoinRow) => `$${formatCompactNumber(c.market_cap)}`,
-                    highlight: false,
-                  },
-                  {
-                    label: "24h Volume",
-                    tooltip: "Total dollar value traded in the last 24 hours. High volume = more active interest.",
-                    format: (c: CoinRow) => `$${formatCompactNumber(c.total_volume)}`,
-                    highlight: false,
-                  },
-                ].map((row, ri) => (
-                  <tr key={row.label} className={ri % 2 === 0 ? "bg-muted/20" : ""}>
-                    <td className="px-5 py-3 text-muted-foreground font-medium">
-                      <span className="inline-flex items-center gap-1">
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {selectedCoins.map((coin, i) => (
+              <div key={coin.id} className="rounded-xl border border-border/50 bg-muted/10 p-4 space-y-4">
+                <div className="flex items-center gap-3">
+                  <img src={coin.image} alt={coin.name} className="h-10 w-10 rounded-full" />
+                  <div>
+                    <p className="font-semibold" style={{ color: COIN_COLORS[i] }}>{coin.name}</p>
+                    <p className="text-xs text-muted-foreground uppercase">{coin.symbol}</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    {
+                      label: "Price",
+                      tooltip: null as string | null,
+                      value: formatPrice(coin.current_price),
+                      positive: null as boolean | null,
+                    },
+                    {
+                      label: "24h Change",
+                      tooltip: "Price change percentage over the last 24 hours.",
+                      value: formatPercentage(coin.price_change_percentage_24h),
+                      positive: (coin.price_change_percentage_24h ?? 0) >= 0,
+                    },
+                    {
+                      label: "Market Cap",
+                      tooltip: "Total market value = price × circulating supply.",
+                      value: `$${formatCompactNumber(coin.market_cap)}`,
+                      positive: null as boolean | null,
+                    },
+                    {
+                      label: "24h Volume",
+                      tooltip: "Total dollar value traded in the last 24 hours.",
+                      value: `$${formatCompactNumber(coin.total_volume)}`,
+                      positive: null as boolean | null,
+                    },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-muted-foreground inline-flex items-center gap-1">
                         {row.label}
                         {row.tooltip && <InfoTooltip content={row.tooltip} />}
                       </span>
-                    </td>
-                    {selectedCoins.map((coin) => {
-                      const val = row.format(coin);
-                      const isPos = row.highlight ? row.positive!(coin) : null;
-                      return (
-                        <td
-                          key={coin.id}
-                          className={`text-right px-5 py-3 font-semibold tabular-nums ${
-                            isPos === true
-                              ? "text-positive"
-                              : isPos === false
-                              ? "text-negative"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {val}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <span className={`font-semibold tabular-nums ${row.positive === true ? "text-positive" : row.positive === false ? "text-negative" : "text-foreground"}`}>
+                        {row.value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
