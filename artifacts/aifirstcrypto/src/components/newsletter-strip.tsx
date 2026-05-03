@@ -23,7 +23,7 @@ export function NewsletterStrip() {
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-shrink-0">
             <Mail className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Get the daily crypto snapshot in your inbox</span>
+            <span className="text-sm font-semibold text-foreground">Get the daily crypto pulse in your inbox</span>
           </div>
           <span className="text-xs text-muted-foreground hidden sm:inline">
             — market mood, top movers &amp; key news, every morning. Free.

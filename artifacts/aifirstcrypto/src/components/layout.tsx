@@ -188,7 +188,7 @@ export function Layout({ children }: LayoutProps) {
                 <span className="font-bold tracking-tight text-foreground">AIFirstCrypto</span>
               </Link>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Your daily crypto snapshot. Live prices, market sentiment, and clear signals — no noise.
+                Your daily crypto pulse. Live prices, market sentiment, and clear signals — no noise.
               </p>
             </div>
 
