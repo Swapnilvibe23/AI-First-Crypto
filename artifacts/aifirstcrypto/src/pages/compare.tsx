@@ -164,31 +164,24 @@ export default function Compare() {
     [coins]
   );
 
-  // Build merged chart data: normalise each coin's series to % change, then align by bucket
   const chartData = useMemo(() => {
-    const normalised = selectedIds.map((_id, i) => {
+    const series = selectedIds.map((id, i) => {
       const raw = histories[i]?.data as { timestamp: number; price: number }[] | undefined;
-      return normalizeToPercent(raw ?? []);
+      return { id, points: normalizeToPercent(raw ?? []) };
     });
 
-    const maxLen = Math.max(...normalised.map((s) => s.length), 0);
-    if (!maxLen) return [];
+    const base = series.find((s) => s.points.length > 0)?.points ?? [];
+    if (!base.length) return [];
 
-    // Downsample to ~100 points for readability
-    const step = Math.max(1, Math.floor(maxLen / 100));
-
-    const base = normalised.find((s) => s.length > 0) ?? [];
-    return base
-      .filter((_, i) => i % step === 0)
-      .map((point, i) => {
-        const row: Record<string, number> = { ts: point.ts };
-        normalised.forEach((series, si) => {
-          const idx = Math.min(Math.round((i * series.length) / (base.length || 1)), series.length - 1);
-          if (series[idx] !== undefined) row[selectedIds[si]] = +series[idx].pct.toFixed(4);
-        });
-        return row;
+    return base.map((point, index) => {
+      const row: Record<string, number> = { ts: point.ts };
+      series.forEach((s) => {
+        const source = s.points[index];
+        if (source) row[s.id] = +source.pct.toFixed(4);
       });
-  }, [selectedIds, histories, days]);
+      return row;
+    });
+  }, [selectedIds, histories]);
 
   const isLoadingAny = histories.some((h, i) => i < selectedIds.length && h.isLoading);
   const hasHistoryError = histories.some((h, i) => i < selectedIds.length && h.isError);
@@ -203,7 +196,9 @@ export default function Compare() {
     setSelectedIds((prev) => prev.filter((c) => c !== id));
   }
 
-  const selectedCoins = selectedIds.map((id) => coinMap[id]).filter(Boolean);
+  const selectedCoins = selectedIds
+    .map((id) => coinMap[id])
+    .filter((coin): coin is CoinRow => Boolean(coin));
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-12">
@@ -367,7 +362,7 @@ export default function Compare() {
       )}
 
       {/* Metrics comparison table */}
-      {selectedCoins.length > 0 && (
+      {selectedIds.length > 0 && (
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
             <CardTitle className="text-xl">Side-by-Side Metrics</CardTitle>
