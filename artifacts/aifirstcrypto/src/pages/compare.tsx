@@ -35,6 +35,19 @@ function normalizeToPercent(prices: { timestamp: number; price: number }[]): { t
   return prices.map(({ timestamp, price }) => ({ ts: timestamp, pct: ((price - base) / base) * 100 }));
 }
 
+function normalizeHistory(history: unknown): { timestamp: number; price: number }[] {
+  if (!Array.isArray(history)) return [];
+  return history
+    .map((pt) => {
+      if (!pt || typeof pt !== "object") return null;
+      const timestamp = "timestamp" in pt ? Number((pt as { timestamp?: unknown }).timestamp) : NaN;
+      const price = "price" in pt ? Number((pt as { price?: unknown }).price) : NaN;
+      if (!Number.isFinite(timestamp) || !Number.isFinite(price)) return null;
+      return { timestamp, price };
+    })
+    .filter((pt): pt is { timestamp: number; price: number } => Boolean(pt));
+}
+
 interface CoinRow {
   id: string;
   name: string;
@@ -166,17 +179,20 @@ export default function Compare() {
 
   const chartData = useMemo(() => {
     const series = selectedIds.map((id, i) => {
-      const raw = histories[i]?.data as { timestamp: number; price: number }[] | undefined;
-      return { id, points: normalizeToPercent(raw ?? []) };
+      const raw = normalizeHistory(histories[i]?.data);
+      return { id, points: normalizeToPercent(raw) };
     });
 
     const base = series.find((s) => s.points.length > 0)?.points ?? [];
     if (!base.length) return [];
 
-    return base.map((point, index) => {
+    const maxPoints = Math.max(...series.map((s) => s.points.length), 0);
+    const step = Math.max(1, Math.floor(maxPoints / 120));
+
+    return base.filter((_, index) => index % step === 0).map((point, index) => {
       const row: Record<string, number> = { ts: point.ts };
       series.forEach((s) => {
-        const source = s.points[index];
+        const source = s.points[Math.min(index * step, s.points.length - 1)];
         if (source) row[s.id] = +source.pct.toFixed(4);
       });
       return row;
