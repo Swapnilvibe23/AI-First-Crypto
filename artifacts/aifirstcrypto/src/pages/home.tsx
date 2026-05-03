@@ -1,4 +1,4 @@
-import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews, useGetCoinHistory, getGetCoinHistoryQueryKey } from "@workspace/api-client-react";
+import { useGetGlobalMarket, useGetMarketSummary, useGetTrending, useGetTopMovers, useGetFearGreed, useGetNews, useGetCoinHistory, getGetCoinHistoryQueryKey, useGetCoins } from "@workspace/api-client-react";
 import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -532,6 +532,7 @@ export default function Home() {
   const { data: topMovers, isLoading: loadingMovers } = useGetTopMovers();
   const { data: fearGreed, isLoading: loadingFearGreed } = useGetFearGreed();
   const { data: news, isLoading: loadingNews } = useGetNews({ limit: 20 });
+  const { data: topCoins, isLoading: loadingTopCoins } = useGetCoins({ per_page: 5 });
 
   const [coinFilter, setCoinFilter] = useState<string>("All");
 
@@ -746,6 +747,99 @@ export default function Home() {
               </section>
             </Reveal>
           )}
+
+          {/* Most Watched Coins */}
+          <Reveal>
+            <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
+                <div>
+                  <h2 className="text-base font-bold">Most Watched Coins</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Top 5 by market cap — live prices</p>
+                </div>
+                <Link href="/rates">
+                  <Button variant="ghost" size="sm" className="text-xs text-primary gap-1 h-8 rounded-full">
+                    See all rates <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+
+              {loadingTopCoins ? (
+                <div className="divide-y divide-border/30">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 px-5 py-3.5">
+                      <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-16 ml-auto" />
+                      <Skeleton className="h-4 w-14" />
+                    </div>
+                  ))}
+                </div>
+              ) : topCoins && topCoins.length > 0 ? (
+                <div className="divide-y divide-border/30">
+                  {topCoins.map((coin, idx) => {
+                    const change = coin.price_change_percentage_24h ?? 0;
+                    const isUp = change >= 0;
+                    const sparkPoints = coin.sparkline_in_7d?.price ?? [];
+                    const step = Math.max(1, Math.floor(sparkPoints.length / 30));
+                    const chartData = sparkPoints
+                      .filter((_: number, i: number) => i % step === 0 || i === sparkPoints.length - 1)
+                      .map((v: number) => ({ v }));
+
+                    return (
+                      <Link key={coin.id} href={`/coin/${coin.id}`}>
+                        <div className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors cursor-pointer group">
+                          {/* Rank */}
+                          <span className="text-xs font-bold text-muted-foreground/50 w-4 flex-shrink-0 tabular-nums text-right">
+                            {idx + 1}
+                          </span>
+
+                          {/* Logo + name */}
+                          <img src={coin.image} alt={coin.name} className="w-8 h-8 rounded-full flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold group-hover:text-primary transition-colors">{coin.name}</span>
+                              <span className="text-xs font-medium text-muted-foreground uppercase">{coin.symbol}</span>
+                            </div>
+                          </div>
+
+                          {/* Sparkline */}
+                          {chartData.length > 2 && (
+                            <div className="w-16 h-8 hidden sm:block flex-shrink-0">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData}>
+                                  <Line
+                                    type="monotone"
+                                    dataKey="v"
+                                    stroke={isUp ? "#10b981" : "#ef4444"}
+                                    strokeWidth={1.5}
+                                    dot={false}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          )}
+
+                          {/* Price */}
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-sm font-bold tabular-nums">
+                              ${coin.current_price >= 1000
+                                ? coin.current_price.toLocaleString("en-US", { maximumFractionDigits: 0 })
+                                : coin.current_price >= 1
+                                ? coin.current_price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                : coin.current_price.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 6 })}
+                            </div>
+                            <div className={`text-xs font-semibold tabular-nums ${isUp ? "text-emerald-400" : "text-red-400"}`}>
+                              {isUp ? "▲" : "▼"} {Math.abs(change).toFixed(2)}%
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          </Reveal>
 
           {/* Market Mood Score */}
           {globalMarket && fearGreed && (
