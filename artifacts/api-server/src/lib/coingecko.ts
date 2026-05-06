@@ -11,7 +11,14 @@
  *   5. Jittered retry — one automatic retry with a small delay on 429 before giving up.
  */
 
-const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
+const COINGECKO_PUBLIC_BASE = "https://api.coingecko.com/api/v3";
+const COINGECKO_PRO_BASE = "https://pro-api.coingecko.com/api/v3";
+const COINGECKO_TIMEOUT_MS = 8_000;
+const COINGECKO_MAX_RETRY_DELAY_MS = 6_000;
+
+declare const process: {
+  env: Record<string, string | undefined>;
+};
 
 interface CacheEntry {
   data: unknown;
@@ -26,28 +33,82 @@ const inFlight = new Map<string, Promise<unknown>>();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function doFetch<T>(url: string): Promise<T> {
-  // Jitter 0–500 ms to spread burst requests
-  await sleep(Math.random() * 300);
+let nextFetchAt = 0;
+let fetchQueue = Promise.resolve();
 
-  const res = await fetch(url, {
-    headers: { Accept: "application/json" },
+function buildHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const demoKey = process.env["COINGECKO_DEMO_API_KEY"] ?? process.env["COINGECKO_API_KEY"];
+  const proKey = process.env["COINGECKO_PRO_API_KEY"];
+
+  if (demoKey) headers["x-cg-demo-api-key"] = demoKey;
+  if (proKey) headers["x-cg-pro-api-key"] = proKey;
+
+  return headers;
+}
+
+function getMinIntervalMs() {
+  if (process.env["COINGECKO_PRO_API_KEY"]) return 250;
+  if (process.env["COINGECKO_DEMO_API_KEY"] || process.env["COINGECKO_API_KEY"]) return 2_000;
+  return 4_500;
+}
+
+function getCoinGeckoBase() {
+  return process.env["COINGECKO_PRO_API_KEY"] ? COINGECKO_PRO_BASE : COINGECKO_PUBLIC_BASE;
+}
+
+async function waitForTurn() {
+  const previous = fetchQueue;
+  let release: () => void = () => {};
+  fetchQueue = new Promise<void>((resolve) => {
+    release = resolve;
   });
 
-  if (!res.ok) {
-    if (res.status === 429) {
-      // Back off ~2 s then retry once
-      await sleep(2000 + Math.random() * 1000);
-      const retry = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!retry.ok) {
-        throw new Error(`CoinGecko error ${retry.status}: ${await retry.text()}`);
-      }
-      return retry.json() as Promise<T>;
+  await previous;
+
+  const now = Date.now();
+  const waitMs = Math.max(0, nextFetchAt - now);
+  if (waitMs > 0) await sleep(waitMs);
+
+  nextFetchAt = Date.now() + getMinIntervalMs();
+  release();
+}
+
+function getRetryDelay(response: Response, attempt: number) {
+  const retryAfter = response.headers.get("retry-after");
+  const retryAfterSeconds = retryAfter ? Number(retryAfter) : Number.NaN;
+
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    return Math.min(retryAfterSeconds * 1_000, COINGECKO_MAX_RETRY_DELAY_MS);
+  }
+
+  return Math.min(1_500 * (attempt + 1) + Math.random() * 750, COINGECKO_MAX_RETRY_DELAY_MS);
+}
+
+async function doFetch<T>(url: string): Promise<T> {
+  const headers = buildHeaders();
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await waitForTurn();
+
+    const res = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(COINGECKO_TIMEOUT_MS),
+    });
+
+    if (res.ok) {
+      return res.json() as Promise<T>;
     }
+
+    if ((res.status === 429 || res.status >= 500) && attempt < 1) {
+      await sleep(getRetryDelay(res, attempt));
+      continue;
+    }
+
     throw new Error(`CoinGecko error ${res.status}: ${await res.text()}`);
   }
 
-  return res.json() as Promise<T>;
+  throw new Error("CoinGecko request failed after retries");
 }
 
 async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
@@ -93,7 +154,7 @@ async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
 // Global market overview
 export async function fetchGlobalMarket() {
   const data = await fetchWithCache<{ data: Record<string, unknown> }>(
-    `${COINGECKO_BASE}/global`,
+    `${getCoinGeckoBase()}/global`,
     120_000
   );
   const d = data.data as Record<string, unknown>;
@@ -110,7 +171,7 @@ export async function fetchGlobalMarket() {
 
 // Paginated coin list with prices
 export async function fetchCoins(page = 1, per_page = 100, order = "market_cap_desc") {
-  const url = `${COINGECKO_BASE}/coins/markets?vs_currency=usd&order=${order}&per_page=${per_page}&page=${page}&sparkline=true&price_change_percentage=24h`;
+  const url = `${getCoinGeckoBase()}/coins/markets?vs_currency=usd&order=${order}&per_page=${per_page}&page=${page}&sparkline=true&price_change_percentage=24h`;
   return fetchWithCache<unknown[]>(url, 60_000);
 }
 
@@ -118,7 +179,7 @@ export async function fetchCoins(page = 1, per_page = 100, order = "market_cap_d
 export async function fetchTrending() {
   const data = await fetchWithCache<{
     coins: Array<{ item: Record<string, unknown> }>;
-  }>(`${COINGECKO_BASE}/search/trending`, 120_000);
+  }>(`${getCoinGeckoBase()}/search/trending`, 120_000);
 
   return (data.coins ?? []).map(({ item }) => ({
     id: item.id as string,
@@ -132,13 +193,13 @@ export async function fetchTrending() {
 
 // Coin detail
 export async function fetchCoinDetail(id: string) {
-  const url = `${COINGECKO_BASE}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
+  const url = `${getCoinGeckoBase()}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
   return fetchWithCache<Record<string, unknown>>(url, 90_000);
 }
 
 // Coin price history — longer TTL since history data changes slowly
 export async function fetchCoinHistory(id: string, days = 7) {
-  const url = `${COINGECKO_BASE}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`;
+  const url = `${getCoinGeckoBase()}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`;
   // 5-minute TTL: historical data doesn't change minute-to-minute
   return fetchWithCache<{ prices: [number, number][] }>(url, 300_000);
 }
