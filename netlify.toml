@@ -1,0 +1,17 @@
+[build]
+  command = "pnpm --filter @workspace/aifirstcrypto... run build"
+  publish = "artifacts/aifirstcrypto/dist"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api?path=:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
