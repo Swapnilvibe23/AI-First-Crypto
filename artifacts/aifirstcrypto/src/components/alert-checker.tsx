@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/format";
+import { COIN_ID_PATTERN, safeHttpUrl } from "@/lib/safe-url";
 import type { PriceAlert } from "@/hooks/use-alerts";
 
 const STORAGE_KEY = "aifirstcrypto_alerts";
@@ -16,7 +17,11 @@ function readAlerts(): PriceAlert[] {
 }
 
 function writeAlerts(alerts: PriceAlert[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts));
+  } catch {
+    // Private mode or a full quota should not crash the page.
+  }
 }
 
 function fireNotification(alert: PriceAlert, currentPrice: number) {
@@ -24,9 +29,10 @@ function fireNotification(alert: PriceAlert, currentPrice: number) {
   const body = `${alert.coinName} has ${directionText} ${formatPrice(alert.targetPrice)}. Current price: ${formatPrice(currentPrice)}`;
 
   if ("Notification" in window && Notification.permission === "granted") {
+    const icon = safeHttpUrl(alert.coinImage);
     new Notification(`🔔 ${alert.coinSymbol.toUpperCase()} Price Alert`, {
       body,
-      icon: alert.coinImage,
+      ...(icon ? { icon } : {}),
       tag: alert.id,
     });
   }
@@ -47,13 +53,15 @@ export function AlertChecker() {
       const alerts = readAlerts();
       if (alerts.length === 0) return;
 
-      const uniqueIds = [...new Set(alerts.map((a) => a.coinId))];
+      const uniqueIds = [...new Set(alerts.map((a) => a.coinId))]
+        .filter((coinId) => COIN_ID_PATTERN.test(coinId))
+        .slice(0, 25);
       const triggeredIds: string[] = [];
 
       await Promise.allSettled(
         uniqueIds.map(async (coinId) => {
           try {
-            const res = await fetch(`/api/coins/${coinId}`);
+            const res = await fetch(`/api/coins/${encodeURIComponent(coinId)}`);
             if (!res.ok) return;
             const coin = await res.json();
             const currentPrice: number = coin.current_price;

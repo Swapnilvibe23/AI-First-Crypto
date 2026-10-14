@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { COIN_ID_PATTERN } from "@/lib/safe-url";
 
 export interface Holding {
   id: string;
@@ -13,17 +14,41 @@ export interface Holding {
 
 const STORAGE_KEY = "aifirstcrypto_holdings";
 
+function isHolding(value: unknown): value is Holding {
+  if (!value || typeof value !== "object") return false;
+  const holding = value as Partial<Holding>;
+  return (
+    typeof holding.id === "string" &&
+    typeof holding.coinId === "string" &&
+    COIN_ID_PATTERN.test(holding.coinId) &&
+    typeof holding.coinName === "string" &&
+    typeof holding.coinSymbol === "string" &&
+    typeof holding.coinImage === "string" &&
+    typeof holding.amount === "number" &&
+    Number.isFinite(holding.amount) &&
+    typeof holding.buyPrice === "number" &&
+    Number.isFinite(holding.buyPrice) &&
+    typeof holding.addedAt === "number"
+  );
+}
+
 function loadHoldings(): Holding[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isHolding).slice(0, 100);
   } catch {
     return [];
   }
 }
 
 function saveHoldings(holdings: Holding[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(holdings));
+  } catch {
+    // Private mode or a full quota should not crash the page.
+  }
 }
 
 export function useHoldings() {
@@ -35,6 +60,8 @@ export function useHoldings() {
 
   const addHolding = useCallback(
     (holding: Omit<Holding, "id" | "addedAt">) => {
+      if (!COIN_ID_PATTERN.test(holding.coinId)) return;
+      if (!Number.isFinite(holding.amount) || !Number.isFinite(holding.buyPrice)) return;
       const newHolding: Holding = {
         ...holding,
         id: `${holding.coinId}-${Date.now()}`,

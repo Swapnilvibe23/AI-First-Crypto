@@ -395,7 +395,7 @@ export default function CoinDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: coin.description }} />
+            <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{coin.description}</p>
           </CardContent>
         </Card>
       )}

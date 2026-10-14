@@ -18,6 +18,7 @@ import { useMemo, useState } from "react";
 import { TickerStrip } from "@/components/ticker-strip";
 import { Reveal } from "@/components/reveal";
 import { AIVerdictCard } from "@/components/ai-verdict-card";
+import { safeHttpUrl } from "@/lib/safe-url";
 
 // ── Top Signal helpers ────────────────────────────────────────────────────────
 
@@ -1208,11 +1209,12 @@ export default function Home() {
                     return `${m}m ago`;
                   })()
                 : "";
+              const signalHref = safeHttpUrl(topSignal.link);
               return (
                 <a
-                  href={topSignal.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={signalHref ?? undefined}
+                  target={signalHref ? "_blank" : undefined}
+                  rel={signalHref ? "noopener noreferrer" : undefined}
                   className={`group block rounded-xl border-2 ${borderColor} bg-gradient-to-r ${bgColor} p-5 hover:shadow-lg transition-all duration-200`}
                 >
                   <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -1309,22 +1311,27 @@ export default function Home() {
                       })()
                     : "";
 
+                  const articleHref = safeHttpUrl(item.link);
+                  const imageHref = safeHttpUrl(item.imageUrl);
                   return (
                     <a
                       key={i}
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={articleHref ?? undefined}
+                      target={articleHref ? "_blank" : undefined}
+                      rel={articleHref ? "noopener noreferrer" : undefined}
                       className={`group flex flex-col rounded-xl border border-l-4 border-border/50 hover:border-primary/40 transition-all duration-200 hover:shadow-md overflow-hidden ${sentimentColor}`}
                     >
                       {/* Article image */}
-                      {item.imageUrl && (
+                      {imageHref && (
                         <div className="w-full h-32 overflow-hidden flex-shrink-0 bg-muted">
                           <img
-                            src={item.imageUrl}
+                            src={imageHref}
                             alt=""
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                            onError={(e) => {
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) parent.style.display = "none";
+                            }}
                           />
                         </div>
                       )}
