@@ -19,7 +19,7 @@ run = "pnpm --filter @workspace/aifirstcrypto run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/aifirstcrypto", "run", "build" ]
-publicDir = "artifacts/aifirstcrypto/dist/public"
+publicDir = "artifacts/aifirstcrypto/dist"
 serve = "static"
 
 [[services.production.rewrites]]
