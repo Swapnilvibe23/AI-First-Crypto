@@ -614,7 +614,7 @@ export default function DCA() {
           {/* Row 3: Period */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium">How far back to simulate</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {PERIOD_OPTIONS.map(opt => (
                 <button
                   key={opt.value}

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { htmlToPlainText, isCoinId, safeHttpUrl } from "./sanitize.ts";
-import { isBlockedHostname, nextHttpsUrl } from "./upstream.ts";
+import { isBlockedHostname, nextHttpsUrl, readCappedBody } from "./upstream.ts";
 
 describe("htmlToPlainText", () => {
   it("drops script contents and tags", () => {
@@ -63,5 +63,56 @@ describe("upstream hosts", () => {
     assert.throws(() => nextHttpsUrl(current, "https://169.254.169.254/", allowed, "public"));
     const same = nextHttpsUrl(current, "/api/v3/ping", allowed, "allowlist");
     assert.equal(same.hostname, "api.coingecko.com");
+  });
+});
+
+describe("readCappedBody", () => {
+  it("decodes utf8 under the byte cap", async () => {
+    const text = "café";
+    const response = new Response(text, {
+      headers: { "content-length": String(Buffer.byteLength(text)) },
+    });
+    assert.equal(await readCappedBody(response, 8, "api.example"), text);
+  });
+
+  it("counts bytes, so one multibyte character can exceed a one-byte cap", async () => {
+    const response = new Response("é");
+    await assert.rejects(
+      () => readCappedBody(response, 1, "api.example"),
+      /response exceeded size limit/,
+    );
+  });
+
+  it("rejects a declared content-length above the cap", async () => {
+    let pulled = false;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled = true;
+        controller.enqueue(new Uint8Array([1]));
+        controller.close();
+      },
+    });
+    const response = new Response(stream, { headers: { "content-length": "5000" } });
+    await assert.rejects(
+      () => readCappedBody(response, 10, "api.example"),
+      /response exceeded size limit/,
+    );
+    assert.equal(pulled, false);
+  });
+
+  it("stops a chunked body once received bytes pass the cap", async () => {
+    const chunk = new Uint8Array(100);
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(chunk);
+        controller.enqueue(chunk);
+        controller.close();
+      },
+    });
+    const response = new Response(stream);
+    await assert.rejects(
+      () => readCappedBody(response, 150, "api.example"),
+      /response exceeded size limit/,
+    );
   });
 });

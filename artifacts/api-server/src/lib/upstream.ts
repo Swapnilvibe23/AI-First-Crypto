@@ -1,7 +1,8 @@
 /**
  * Fetch helper for fixed upstream APIs.
  * CybeDefend owasp-2025-a01 / owasp-2025-a06: https only, host allowlist,
- * no credentialed URLs, one checked redirect, timeout, and a response cap.
+ * no credentialed URLs, one checked redirect, timeout, and a byte cap
+ * enforced while the body streams. Unread 3xx and error bodies are cancelled.
  * Upstream bodies are not copied into errors.
  */
 
@@ -96,6 +97,7 @@ export async function fetchAllowlisted(
 
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location");
+    await response.body?.cancel();
     if (!location) throw new UpstreamHttpError(response.status, url.hostname);
     url = nextHttpsUrl(url, location, allowed, redirectPolicy);
     response = await fetch(url, {
@@ -105,11 +107,47 @@ export async function fetchAllowlisted(
     });
   }
 
-  if (!response.ok) throw new UpstreamHttpError(response.status, url.hostname);
-
-  const text = await response.text();
-  if (text.length > maxBytes) {
-    throw new Error(`Upstream ${url.hostname} response exceeded size limit`);
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new UpstreamHttpError(response.status, url.hostname);
   }
-  return text;
+
+  return readCappedBody(response, maxBytes, url.hostname);
+}
+
+/** Read a response as UTF-8, stopping once the received bytes pass maxBytes. */
+export async function readCappedBody(
+  response: Response,
+  maxBytes: number,
+  hostname: string,
+): Promise<string> {
+  const declared = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    await response.body?.cancel();
+    throw new Error(`Upstream ${hostname} response exceeded size limit`);
+  }
+
+  const body = response.body;
+  if (!body) return "";
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      received += value.byteLength;
+      if (received > maxBytes) {
+        throw new Error(`Upstream ${hostname} response exceeded size limit`);
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    await reader.cancel().catch(() => undefined);
+    throw error;
+  }
+
+  return Buffer.concat(chunks).toString("utf8");
 }
