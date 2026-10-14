@@ -57,16 +57,21 @@ paths:
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 1
         - name: per_page
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 250
             default: 100
         - name: order
           in: query
           schema:
             type: string
+            enum: [market_cap_desc, market_cap_asc, volume_desc, volume_asc]
             default: market_cap_desc
       responses:
         "200":
@@ -133,6 +138,9 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 100
+            pattern: "^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$"
       responses:
         "200":
           description: Coin detail
@@ -152,10 +160,15 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 100
+            pattern: "^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$"
         - name: days
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 365
             default: 7
       responses:
         "200":
@@ -191,6 +204,8 @@ paths:
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 50
             default: 10
       responses:
         "200":
@@ -212,6 +227,8 @@ paths:
           in: query
           schema:
             type: integer
+            minimum: 1
+            maximum: 365
             default: 30
       responses:
         "200":

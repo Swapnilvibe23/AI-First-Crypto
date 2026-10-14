@@ -641,7 +641,7 @@ export default function Resources() {
   const resources: ResourceItem[] = [
     {
       title: "DCA Calculator",
-      description: "Simulate what consistent weekly or monthly buying would have returned on any coin over 1–3 years.",
+      description: "Simulate what consistent weekly or monthly buying would have returned on any coin over the past 6–12 months.",
       icon: Calculator,
       color: "text-blue-500",
       bg: "bg-blue-500/10",

@@ -157,7 +157,10 @@ overrides:
   "@expo/ngrok-bin>@expo/ngrok-bin-win32-x64": "-"
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
-  esbuild: "0.27.3"
+  # GHSA-g7r4-m6w7-qqqr and GHSA-gv7w-rqvm-qjhr are fixed in 0.28.1
+  esbuild: "0.28.1"
+  # CVE-2026-93749: indexed source-map offsets could block the event loop
+  source-map-js: "1.2.2"
   # Security vulnerability fixes
   "brace-expansion": "5.0.5"
   "lodash": "4.18.1"

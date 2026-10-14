@@ -65,6 +65,16 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+const SAFE_CSS_TOKEN = /[^a-zA-Z0-9_-]/g
+const SAFE_COLOR =
+  /^(?:#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,32}|(?:hsl|hsla|rgb|rgba|oklch|oklab|lab|lch)\([0-9a-zA-Z.%\s,/+()-]{1,80}\)|var\(--[a-zA-Z0-9_-]{1,40}\))$/
+
+function cssColor(value: string | undefined): string | null {
+  if (!value) return null
+  const color = value.trim()
+  return SAFE_COLOR.test(color) ? color : null
+}
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color
@@ -74,25 +84,33 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // owasp-2025-a05: only sanitized tokens are interpolated into this style tag.
+  const safeId = id.replace(SAFE_CSS_TOKEN, "")
+  const css = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const declarations = colorConfig
+        .map(([key, itemConfig]) => {
+          const safeKey = key.replace(SAFE_CSS_TOKEN, "")
+          if (!safeKey) return null
+          const color = cssColor(
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+              itemConfig.color
+          )
+          return color ? `  --color-${safeKey}: ${color};` : null
+        })
+        .filter(Boolean)
+        .join("\n")
+      if (!declarations) return ""
+      return `${prefix} [data-chart="${safeId}"] {\n${declarations}\n}`
+    })
+    .join("\n")
+
+  if (!css.trim()) return null
+
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
+        __html: css,
       }}
     />
   )

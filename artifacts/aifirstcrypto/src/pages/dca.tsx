@@ -21,7 +21,7 @@ import type { PricePoint, Coin } from "@workspace/api-client-react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Frequency = "weekly" | "biweekly" | "monthly";
-type Period = 180 | 365 | 730 | 1095;
+type Period = 180 | 365;
 
 interface Purchase {
   timestamp: number;
@@ -443,8 +443,6 @@ function StatCard({
 const PERIOD_OPTIONS: { value: Period; label: string }[] = [
   { value: 180, label: "6 Months" },
   { value: 365, label: "1 Year" },
-  { value: 730, label: "2 Years" },
-  { value: 1095, label: "3 Years" },
 ];
 
 const FREQ_OPTIONS: { value: Frequency; label: string; sub: string }[] = [
@@ -456,7 +454,7 @@ const FREQ_OPTIONS: { value: Frequency; label: string; sub: string }[] = [
 export default function DCA() {
   useSeoMeta({
     title: "Crypto DCA Calculator — Dollar Cost Average — AIFirstCrypto",
-    description: "Simulate what consistent weekly or monthly crypto buying would have returned over 1–3 years. Free DCA calculator for Bitcoin, Ethereum, and more.",
+    description: "Simulate what consistent weekly or monthly crypto buying would have returned over the past 6–12 months. Free DCA calculator for Bitcoin, Ethereum, and more.",
   });
   const [coinId, setCoinId] = useState("bitcoin");
   const [coinSearch, setCoinSearch] = useState("");
@@ -616,7 +614,7 @@ export default function DCA() {
           {/* Row 3: Period */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium">How far back to simulate</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {PERIOD_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
