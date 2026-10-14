@@ -31,7 +31,7 @@ router.get("/market/global", async (req, res): Promise<void> => {
 router.get("/market/coins", async (req, res): Promise<void> => {
   const parsed = GetCoinsQueryParams.safeParse(req.query);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: "Invalid request parameters" });
     return;
   }
   try {

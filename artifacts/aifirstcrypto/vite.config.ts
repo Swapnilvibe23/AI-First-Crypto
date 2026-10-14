@@ -16,6 +16,25 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH || "/";
 
+// Replaces `allowedHosts: true`, which turns off Vite's DNS-rebinding check.
+function viteAllowedHosts(): string[] {
+  const extras = [process.env.REPLIT_DEV_DOMAIN, process.env.REPLIT_DOMAINS, process.env.ALLOWED_HOSTS]
+    .flatMap((value) => (value ? value.split(",") : []))
+    .map((host) => host.trim())
+    .filter(Boolean);
+  return [
+    "localhost",
+    "127.0.0.1",
+    ".replit.dev",
+    ".replit.app",
+    ".repl.co",
+    ".netlify.app",
+    "aifirstcrypto.com",
+    ".aifirstcrypto.com",
+    ...extras,
+  ];
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -52,14 +71,20 @@ export default defineConfig({
     port,
     strictPort: true,
     host: "0.0.0.0",
-    allowedHosts: true,
+    allowedHosts: viteAllowedHosts(),
     fs: {
       strict: true,
+    },
+    proxy: {
+      "/api": {
+        target: process.env.API_PROXY_TARGET ?? "http://127.0.0.1:8080",
+        changeOrigin: true,
+      },
     },
   },
   preview: {
     port,
     host: "0.0.0.0",
-    allowedHosts: true,
+    allowedHosts: viteAllowedHosts(),
   },
 });
