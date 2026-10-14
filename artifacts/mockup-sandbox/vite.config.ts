@@ -21,6 +21,22 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH;
 
+function viteAllowedHosts(): string[] {
+  const extras = [process.env.REPLIT_DEV_DOMAIN, process.env.REPLIT_DOMAINS, process.env.ALLOWED_HOSTS]
+    .flatMap((value) => (value ? value.split(",") : []))
+    .map((host) => host.trim())
+    .filter(Boolean);
+  return [
+    "localhost",
+    "127.0.0.1",
+    ".replit.dev",
+    ".replit.app",
+    ".repl.co",
+    ".netlify.app",
+    ...extras,
+  ];
+}
+
 if (!basePath) {
   throw new Error(
     "BASE_PATH environment variable is required but was not provided.",
@@ -58,7 +74,7 @@ export default defineConfig({
   server: {
     port,
     host: "0.0.0.0",
-    allowedHosts: true,
+    allowedHosts: viteAllowedHosts(),
     fs: {
       strict: true,
     },
@@ -66,6 +82,6 @@ export default defineConfig({
   preview: {
     port,
     host: "0.0.0.0",
-    allowedHosts: true,
+    allowedHosts: viteAllowedHosts(),
   },
 });

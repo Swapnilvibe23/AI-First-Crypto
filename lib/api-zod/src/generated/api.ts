@@ -35,9 +35,11 @@ export const getCoinsQueryPerPageDefault = 100;
 export const getCoinsQueryOrderDefault = `market_cap_desc`;
 
 export const GetCoinsQueryParams = zod.object({
-  page: zod.coerce.number().default(getCoinsQueryPageDefault),
-  per_page: zod.coerce.number().default(getCoinsQueryPerPageDefault),
-  order: zod.coerce.string().default(getCoinsQueryOrderDefault),
+  page: zod.coerce.number().int().min(1).max(100).default(getCoinsQueryPageDefault),
+  per_page: zod.coerce.number().int().min(1).max(250).default(getCoinsQueryPerPageDefault),
+  order: zod
+    .enum(["market_cap_desc", "market_cap_asc", "volume_desc", "volume_asc"])
+    .default(getCoinsQueryOrderDefault as "market_cap_desc"),
 });
 
 export const GetCoinsResponseItem = zod.object({
@@ -127,8 +129,14 @@ export const GetMarketSummaryResponse = zod.object({
 /**
  * @summary Coin detail
  */
+const coinIdSchema = zod
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/);
+
 export const GetCoinDetailParams = zod.object({
-  id: zod.coerce.string(),
+  id: coinIdSchema,
 });
 
 export const GetCoinDetailResponse = zod.object({
@@ -152,13 +160,13 @@ export const GetCoinDetailResponse = zod.object({
  * @summary Coin price history
  */
 export const GetCoinHistoryParams = zod.object({
-  id: zod.coerce.string(),
+  id: coinIdSchema,
 });
 
 export const getCoinHistoryQueryDaysDefault = 7;
 
 export const GetCoinHistoryQueryParams = zod.object({
-  days: zod.coerce.number().default(getCoinHistoryQueryDaysDefault),
+  days: zod.coerce.number().int().min(1).max(365).default(getCoinHistoryQueryDaysDefault),
 });
 
 export const GetCoinHistoryResponseItem = zod.object({
@@ -184,7 +192,7 @@ export const GetFearGreedResponse = zod.object({
 export const getNewsQueryLimitDefault = 10;
 
 export const GetNewsQueryParams = zod.object({
-  limit: zod.coerce.number().default(getNewsQueryLimitDefault),
+  limit: zod.coerce.number().int().min(1).max(50).default(getNewsQueryLimitDefault),
 });
 
 export const GetNewsResponseItem = zod.object({
@@ -203,7 +211,7 @@ export const GetNewsResponse = zod.array(GetNewsResponseItem);
 export const getFearGreedHistoryQueryLimitDefault = 30;
 
 export const GetFearGreedHistoryQueryParams = zod.object({
-  limit: zod.coerce.number().default(getFearGreedHistoryQueryLimitDefault),
+  limit: zod.coerce.number().int().min(1).max(365).default(getFearGreedHistoryQueryLimitDefault),
 });
 
 export const GetFearGreedHistoryResponseItem = zod.object({

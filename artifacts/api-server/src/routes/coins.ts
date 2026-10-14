@@ -10,14 +10,15 @@ import {
   GetCoinHistoryResponse,
 } from "@workspace/api-zod";
 import { fetchCoinDetail, fetchCoinHistory } from "../lib/coingecko";
+import { htmlToPlainText, safeImageUrl } from "../lib/sanitize";
 
 const router: IRouter = Router();
 
 // GET /coins/:id
 router.get("/coins/:id", async (req, res): Promise<void> => {
-  const params = GetCoinHistoryParams.safeParse(req.params);
+  const params = GetCoinDetailParams.safeParse(req.params);
   if (!params.success) {
-    res.status(400).json({ error: params.error.message });
+    res.status(400).json({ error: "Invalid request parameters" });
     return;
   }
 
@@ -44,15 +45,14 @@ router.get("/coins/:id", async (req, res): Promise<void> => {
     });
 
     const descriptionRaw = raw.description as Record<string, string> | undefined;
-    const description = descriptionRaw?.en
-      ? descriptionRaw.en.replace(/<[^>]*>/g, "").slice(0, 500)
-      : "";
+    // owasp-2025-a05: CoinGecko descriptions are HTML. Store and return plain text.
+    const description = descriptionRaw?.en ? htmlToPlainText(descriptionRaw.en) : "";
 
     const coin = {
       id: raw.id as string,
       symbol: raw.symbol as string,
       name: raw.name as string,
-      image: (raw.image as Record<string, string>)?.large ?? "",
+      image: safeImageUrl((raw.image as Record<string, string> | undefined)?.large),
       current_price: currentPrice,
       market_cap: marketCap,
       market_cap_rank: marketCapRank,
@@ -76,19 +76,27 @@ router.get("/coins/:id", async (req, res): Promise<void> => {
 router.get("/coins/:id/history", async (req, res): Promise<void> => {
   const idParsed = GetCoinHistoryParams.safeParse(req.params);
   if (!idParsed.success) {
-    res.status(400).json({ error: idParsed.error.message });
+    res.status(400).json({ error: "Invalid request parameters" });
     return;
   }
 
   const queryParsed = GetCoinHistoryQueryParams.safeParse(req.query);
   if (!queryParsed.success) {
-    res.status(400).json({ error: queryParsed.error.message });
+    res.status(400).json({ error: "Invalid request parameters" });
     return;
   }
 
   try {
     const history = await fetchCoinHistory(idParsed.data.id, queryParsed.data.days);
-    const points = (history.prices ?? []).map(([timestamp, price]) => ({ timestamp, price }));
+    const prices = Array.isArray(history.prices) ? history.prices : [];
+    const points = prices
+      .filter((point): point is [number, number] =>
+        Array.isArray(point) &&
+        point.length >= 2 &&
+        typeof point[0] === "number" &&
+        typeof point[1] === "number",
+      )
+      .map(([timestamp, price]) => ({ timestamp, price }));
     res.json(GetCoinHistoryResponse.parse(points));
   } catch (err) {
     req.log.error(err, "Failed to fetch coin history");

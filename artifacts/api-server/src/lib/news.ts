@@ -7,7 +7,13 @@
  *   - Decrypt        https://decrypt.co/feed
  *   - Bitcoin Magazine https://bitcoinmagazine.com/feed
  *   - The Block      https://www.theblock.co/rss.xml
+ *
+ * CybeDefend owasp-2025-a05: headline links and images are http(s) only.
+ * CybeDefend owasp-2025-a01: feed hosts are fixed and response size is capped.
  */
+
+import { LIMITS, clampInt, safeHttpUrl } from "./sanitize";
+import { fetchAllowlisted } from "./upstream";
 
 export interface NewsItem {
   title: string;
@@ -19,13 +25,14 @@ export interface NewsItem {
 }
 
 const NEWS_CACHE_TTL = 5 * 60_000;
+const MAX_FEED_BYTES = 2_000_000;
 let cache: { items: NewsItem[]; expiresAt: number } | null = null;
 
-const RSS_FEEDS: { url: string; source: string }[] = [
-  { url: "https://cointelegraph.com/rss",           source: "CoinTelegraph" },
-  { url: "https://decrypt.co/feed",                 source: "Decrypt" },
-  { url: "https://bitcoinmagazine.com/feed",        source: "Bitcoin Magazine" },
-  { url: "https://www.theblock.co/rss.xml",         source: "The Block" },
+const RSS_FEEDS: { url: string; source: string; hosts: readonly string[] }[] = [
+  { url: "https://cointelegraph.com/rss", source: "CoinTelegraph", hosts: ["cointelegraph.com"] },
+  { url: "https://decrypt.co/feed", source: "Decrypt", hosts: ["decrypt.co"] },
+  { url: "https://bitcoinmagazine.com/feed", source: "Bitcoin Magazine", hosts: ["bitcoinmagazine.com"] },
+  { url: "https://www.theblock.co/rss.xml", source: "The Block", hosts: ["www.theblock.co"] },
 ];
 
 const BULLISH_WORDS = [
@@ -65,19 +72,23 @@ function decodeEntities(text: string): string {
     .replace(/&#x27;/g, "'")
     .replace(/&#x2F;/g, "/")
     .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)));
+    .replace(/&#(\d+);/g, (_, code: string) => {
+      const point = Number(code);
+      if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
+      return String.fromCodePoint(point);
+    });
 }
 
 function extractText(xml: string, tag: string): string {
   // Handle CDATA: <tag><![CDATA[...]]></tag>
   const cdataRe = new RegExp(`<${tag}[^>]*>\\s*<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>\\s*<\\/${tag}>`, "i");
   const cdataMatch = cdataRe.exec(xml);
-  if (cdataMatch) return decodeEntities(cdataMatch[1].trim());
+  if (cdataMatch?.[1]) return decodeEntities(cdataMatch[1].trim());
 
   // Plain text
   const plainRe = new RegExp(`<${tag}[^>]*>([^<]*)<\\/${tag}>`, "i");
   const plainMatch = plainRe.exec(xml);
-  if (plainMatch) return decodeEntities(plainMatch[1].trim());
+  if (plainMatch?.[1]) return decodeEntities(plainMatch[1].trim());
 
   return "";
 }
@@ -85,10 +96,10 @@ function extractText(xml: string, tag: string): string {
 function extractLink(xml: string): string {
   // <link>...</link> (RSS 2.0)
   const m1 = /<link>([^<]+)<\/link>/i.exec(xml);
-  if (m1) return m1[1].trim();
+  if (m1?.[1]) return m1[1].trim();
   // <link href="..." /> (Atom-style)
   const m2 = /<link[^>]+href=["']([^"']+)["']/i.exec(xml);
-  if (m2) return m2[1].trim();
+  if (m2?.[1]) return m2[1].trim();
   return "";
 }
 
@@ -104,23 +115,23 @@ function extractLink(xml: string): string {
 function extractImage(xml: string): string {
   // media:content
   const mc = /<media:content[^>]+url=["']([^"']+)["'][^>]*(?:medium=["']image["'][^>]*)?\/>/i.exec(xml);
-  if (mc && isImage(mc[1])) return mc[1];
+  if (mc?.[1] && isImage(mc[1])) return mc[1];
 
   // media:thumbnail
   const mt = /<media:thumbnail[^>]+url=["']([^"']+)["']/i.exec(xml);
-  if (mt && isImage(mt[1])) return mt[1];
+  if (mt?.[1] && isImage(mt[1])) return mt[1];
 
   // enclosure
   const enc = /<enclosure[^>]+url=["']([^"']+)["'][^>]+type=["']image\/[^"']*["']/i.exec(xml);
-  if (enc) return enc[1];
+  if (enc?.[1]) return enc[1];
 
   // image/url tag
   const imgUrl = /<image[^>]*>\s*<url>([^<]+)<\/url>/i.exec(xml);
-  if (imgUrl && isImage(imgUrl[1])) return imgUrl[1];
+  if (imgUrl?.[1] && isImage(imgUrl[1])) return imgUrl[1];
 
   // img src inside content:encoded CDATA
   const imgSrc = /<img[^>]+src=["']([^"']+)["']/i.exec(xml);
-  if (imgSrc && isImage(imgSrc[1])) return imgSrc[1];
+  if (imgSrc?.[1] && isImage(imgSrc[1])) return imgSrc[1];
 
   return "";
 }
@@ -129,45 +140,56 @@ function isImage(url: string): boolean {
   return /\.(jpg|jpeg|png|webp|gif|svg)(\?|$)/i.test(url) || url.includes("image") || url.includes("img");
 }
 
+function plainTitle(value: string): string {
+  return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
+}
+
 function parseItems(xml: string, source: string): NewsItem[] {
   const items: NewsItem[] = [];
   const itemRe = /<item[\s>]([\s\S]*?)<\/item>/gi;
   let match: RegExpExecArray | null;
   while ((match = itemRe.exec(xml)) !== null) {
-    const block = match[1];
-    const title = extractText(block, "title");
-    const link = extractLink(block);
-    const pubDate = extractText(block, "pubDate");
-    const imageUrl = extractImage(block);
+    const block = match[1] ?? "";
+    const title = plainTitle(extractText(block, "title"));
+    const link = safeHttpUrl(extractLink(block));
+    const pubDate = extractText(block, "pubDate").slice(0, 80);
+    const imageUrl = safeHttpUrl(extractImage(block)) ?? "";
     if (!title || !link) continue;
     items.push({ title, link, pubDate, source, sentiment: scoreSentiment(title), imageUrl });
   }
   return items;
 }
 
-async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
-  const res = await fetch(url, {
+async function fetchFeed(url: string, source: string, hosts: readonly string[]): Promise<NewsItem[]> {
+  const xml = await fetchAllowlisted(url, hosts, {
     headers: { "User-Agent": "AIFirstCrypto/1.0 RSS Reader", Accept: "application/rss+xml, text/xml, */*" },
-    signal: AbortSignal.timeout(8_000),
+    timeoutMs: 8_000,
+    maxBytes: MAX_FEED_BYTES,
+    // Feeds sometimes redirect onto their own CDN. The first hop is allowlisted;
+    // the single redirect must still be public https (no loopback or metadata IPs).
+    redirect: "public",
   });
-  if (!res.ok) throw new Error(`RSS fetch failed from ${source}: ${res.status}`);
-  const xml = await res.text();
   return parseItems(xml, source);
 }
 
 export async function fetchNews(limit = 20): Promise<NewsItem[]> {
+  const safeLimit = clampInt(limit, LIMITS.news.min, LIMITS.news.max);
   const now = Date.now();
   if (cache && cache.expiresAt > now) {
-    return cache.items.slice(0, limit);
+    return cache.items.slice(0, safeLimit);
   }
 
   const results = await Promise.allSettled(
-    RSS_FEEDS.map((f) => fetchFeed(f.url, f.source))
+    RSS_FEEDS.map((f) => fetchFeed(f.url, f.source, f.hosts)),
   );
 
   const allItems: NewsItem[] = [];
   for (const r of results) {
     if (r.status === "fulfilled") allItems.push(...r.value);
+  }
+
+  if (allItems.length === 0 && results.every((r) => r.status === "rejected")) {
+    throw new Error("All news feeds failed");
   }
 
   // Sort by date descending (most recent first)
@@ -189,5 +211,5 @@ export async function fetchNews(limit = 20): Promise<NewsItem[]> {
   }
 
   cache = { items: deduped, expiresAt: now + NEWS_CACHE_TTL };
-  return deduped.slice(0, limit);
+  return deduped.slice(0, safeLimit);
 }

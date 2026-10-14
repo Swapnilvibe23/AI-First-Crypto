@@ -26,7 +26,7 @@ router.get("/sentiment/fear-greed", async (req, res): Promise<void> => {
 router.get("/sentiment/fear-greed/history", async (req, res): Promise<void> => {
   const parsed = GetFearGreedHistoryQueryParams.safeParse(req.query);
   if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
+    res.status(400).json({ error: "Invalid request parameters" });
     return;
   }
   try {

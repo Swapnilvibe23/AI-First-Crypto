@@ -9,16 +9,32 @@
  *   3. In-flight deduplication — concurrent requests for the same URL share one fetch.
  *   4. 429 / 5xx fallback — always return stale data rather than throwing when available.
  *   5. Jittered retry — one automatic retry with a small delay on 429 before giving up.
+ *
+ * CybeDefend owasp-2025-a06: responses are treated as untrusted. Image URLs are
+ * restricted to http(s), request inputs are bounded, and the host is fixed.
  */
 
+import {
+  LIMITS,
+  clampInt,
+  isCoinId,
+  isCoinOrder,
+  safeImageUrl,
+  type CoinOrder,
+} from "./sanitize";
+import { fetchAllowlisted, UpstreamHttpError } from "./upstream";
+
+const COINGECKO_HOSTS = ["api.coingecko.com"] as const;
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
+const MAX_CACHE_ENTRIES = 200;
+const MAX_IN_FLIGHT = 40;
 
 interface CacheEntry {
   data: unknown;
   expiresAt: number;
 }
 
-// Main cache — entries persist indefinitely so stale data can always be served
+// Main cache — entries persist until the cap so stale data can still be served
 const cache = new Map<string, CacheEntry>();
 
 // In-flight requests — deduplicates concurrent fetches for the same URL
@@ -26,28 +42,57 @@ const inFlight = new Map<string, Promise<unknown>>();
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+function storeCache(url: string, data: unknown, ttlMs: number) {
+  if (cache.has(url)) cache.delete(url);
+  cache.set(url, { data, expiresAt: Date.now() + ttlMs });
+  while (cache.size > MAX_CACHE_ENTRIES) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
+async function readJson<T>(url: string): Promise<T> {
+  const text = await fetchAllowlisted(url, COINGECKO_HOSTS, {
+    headers: { Accept: "application/json" },
+    timeoutMs: 10_000,
+    maxBytes: 5_000_000,
+    redirect: "allowlist",
+  });
+  return JSON.parse(text) as T;
+}
+
 async function doFetch<T>(url: string): Promise<T> {
-  // Jitter 0–500 ms to spread burst requests
+  // Jitter 0–300 ms to spread burst requests
   await sleep(Math.random() * 300);
 
-  const res = await fetch(url, {
-    headers: { Accept: "application/json" },
-  });
-
-  if (!res.ok) {
-    if (res.status === 429) {
-      // Back off ~2 s then retry once
+  try {
+    return await readJson<T>(url);
+  } catch (err) {
+    if (err instanceof UpstreamHttpError && err.status === 429) {
       await sleep(2000 + Math.random() * 1000);
-      const retry = await fetch(url, { headers: { Accept: "application/json" } });
-      if (!retry.ok) {
-        throw new Error(`CoinGecko error ${retry.status}: ${await retry.text()}`);
-      }
-      return retry.json() as Promise<T>;
+      return readJson<T>(url);
     }
-    throw new Error(`CoinGecko error ${res.status}: ${await res.text()}`);
+    throw err;
+  }
+}
+
+function startFetch<T>(url: string, ttlMs: number): Promise<T> {
+  const existing = inFlight.get(url);
+  if (existing) return existing as Promise<T>;
+  if (inFlight.size >= MAX_IN_FLIGHT) {
+    return Promise.reject(new Error("Too many CoinGecko requests in flight"));
   }
 
-  return res.json() as Promise<T>;
+  const promise = doFetch<T>(url)
+    .then((data) => {
+      storeCache(url, data, ttlMs);
+      return data;
+    })
+    .finally(() => inFlight.delete(url));
+
+  inFlight.set(url, promise);
+  return promise;
 }
 
 async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
@@ -61,57 +106,78 @@ async function fetchWithCache<T>(url: string, ttlMs = 60_000): Promise<T> {
 
   // Stale-while-revalidate: serve stale data immediately and refresh in background
   if (cached) {
-    // Fire-and-forget background refresh (don't await, don't throw)
-    if (!inFlight.has(url)) {
+    if (!inFlight.has(url) && inFlight.size < MAX_IN_FLIGHT) {
       const bg = doFetch<T>(url)
         .then((data) => {
-          cache.set(url, { data, expiresAt: Date.now() + ttlMs });
+          storeCache(url, data, ttlMs);
         })
-        .catch(() => { /* silently keep stale */ })
+        .catch(() => {
+          /* silently keep stale */
+        })
         .finally(() => inFlight.delete(url));
       inFlight.set(url, bg);
     }
     return cached.data as T;
   }
 
-  // No cache yet — deduplicate concurrent first-time fetches
-  if (inFlight.has(url)) {
-    return inFlight.get(url)! as Promise<T>;
-  }
+  return startFetch<T>(url, ttlMs);
+}
 
-  const promise = doFetch<T>(url)
-    .then((data) => {
-      cache.set(url, { data, expiresAt: Date.now() + ttlMs });
-      return data;
-    })
-    .finally(() => inFlight.delete(url));
+function num(value: unknown): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
-  inFlight.set(url, promise);
-  return promise as Promise<T>;
+function withSafeImage<T>(row: T): T {
+  if (!row || typeof row !== "object") return row;
+  const image = (row as { image?: unknown }).image;
+  if (typeof image !== "string") return row;
+  return { ...row, image: safeImageUrl(image) };
 }
 
 // Global market overview
 export async function fetchGlobalMarket() {
   const data = await fetchWithCache<{ data: Record<string, unknown> }>(
     `${COINGECKO_BASE}/global`,
-    120_000
+    120_000,
   );
-  const d = data.data as Record<string, unknown>;
-  const totalMarketCap = d.total_market_cap as Record<string, number>;
-  const totalVolume = d.total_volume as Record<string, number>;
+  if (!data?.data || typeof data.data !== "object") {
+    throw new Error("CoinGecko global response was empty");
+  }
+  const d = data.data;
+  const totalMarketCap = d.total_market_cap as Record<string, unknown> | undefined;
+  const totalVolume = d.total_volume as Record<string, unknown> | undefined;
+  const dominance = d.market_cap_percentage as Record<string, unknown> | undefined;
   return {
-    total_market_cap_usd: totalMarketCap?.usd ?? 0,
-    total_volume_usd: totalVolume?.usd ?? 0,
-    btc_dominance: (d.market_cap_percentage as Record<string, number>)?.btc ?? 0,
-    active_cryptocurrencies: (d.active_cryptocurrencies as number) ?? 0,
-    market_cap_change_percentage_24h: (d.market_cap_change_percentage_24h_usd as number) ?? 0,
+    total_market_cap_usd: num(totalMarketCap?.usd),
+    total_volume_usd: num(totalVolume?.usd),
+    btc_dominance: num(dominance?.btc),
+    active_cryptocurrencies: num(d.active_cryptocurrencies),
+    market_cap_change_percentage_24h: num(d.market_cap_change_percentage_24h_usd),
   };
 }
 
 // Paginated coin list with prices
-export async function fetchCoins(page = 1, per_page = 100, order = "market_cap_desc") {
-  const url = `${COINGECKO_BASE}/coins/markets?vs_currency=usd&order=${order}&per_page=${per_page}&page=${page}&sparkline=true&price_change_percentage=24h`;
-  return fetchWithCache<unknown[]>(url, 60_000);
+export async function fetchCoins(
+  page = 1,
+  perPage = 100,
+  order: CoinOrder | string = "market_cap_desc",
+) {
+  const safePage = clampInt(page, LIMITS.page.min, LIMITS.page.max);
+  const safePerPage = clampInt(perPage, LIMITS.perPage.min, LIMITS.perPage.max);
+  if (!isCoinOrder(order)) throw new Error("Invalid coin sort order");
+
+  const url = new URL(`${COINGECKO_BASE}/coins/markets`);
+  url.searchParams.set("vs_currency", "usd");
+  url.searchParams.set("order", order);
+  url.searchParams.set("per_page", String(safePerPage));
+  url.searchParams.set("page", String(safePage));
+  url.searchParams.set("sparkline", "true");
+  url.searchParams.set("price_change_percentage", "24h");
+
+  const rows = await fetchWithCache<unknown[]>(url.toString(), 60_000);
+  if (!Array.isArray(rows)) throw new Error("CoinGecko markets response was not a list");
+  return rows.map(withSafeImage);
 }
 
 // Trending coins (CoinGecko trending endpoint)
@@ -120,25 +186,39 @@ export async function fetchTrending() {
     coins: Array<{ item: Record<string, unknown> }>;
   }>(`${COINGECKO_BASE}/search/trending`, 120_000);
 
-  return (data.coins ?? []).map(({ item }) => ({
-    id: item.id as string,
-    name: item.name as string,
-    symbol: item.symbol as string,
-    market_cap_rank: (item.market_cap_rank as number | null) ?? null,
-    thumb: item.thumb as string,
-    price_btc: (item.price_btc as number) ?? 0,
-  }));
+  const coins = Array.isArray(data?.coins) ? data.coins : [];
+  return coins.flatMap(({ item }) => {
+    if (!item || typeof item !== "object") return [];
+    return [{
+      id: typeof item.id === "string" ? item.id : "",
+      name: typeof item.name === "string" ? item.name : "",
+      symbol: typeof item.symbol === "string" ? item.symbol : "",
+      market_cap_rank: typeof item.market_cap_rank === "number" ? item.market_cap_rank : null,
+      thumb: safeImageUrl(item.thumb),
+      price_btc: num(item.price_btc),
+    }];
+  });
 }
 
 // Coin detail
 export async function fetchCoinDetail(id: string) {
-  const url = `${COINGECKO_BASE}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`;
-  return fetchWithCache<Record<string, unknown>>(url, 90_000);
+  if (!isCoinId(id)) throw new Error("Invalid coin id");
+  const url = new URL(`${COINGECKO_BASE}/coins/${encodeURIComponent(id)}`);
+  url.searchParams.set("localization", "false");
+  url.searchParams.set("tickers", "false");
+  url.searchParams.set("market_data", "true");
+  url.searchParams.set("community_data", "false");
+  url.searchParams.set("developer_data", "false");
+  return fetchWithCache<Record<string, unknown>>(url.toString(), 90_000);
 }
 
 // Coin price history — longer TTL since history data changes slowly
 export async function fetchCoinHistory(id: string, days = 7) {
-  const url = `${COINGECKO_BASE}/coins/${encodeURIComponent(id)}/market_chart?vs_currency=usd&days=${days}`;
+  if (!isCoinId(id)) throw new Error("Invalid coin id");
+  const safeDays = clampInt(days, LIMITS.days.min, LIMITS.days.max);
+  const url = new URL(`${COINGECKO_BASE}/coins/${encodeURIComponent(id)}/market_chart`);
+  url.searchParams.set("vs_currency", "usd");
+  url.searchParams.set("days", String(safeDays));
   // 5-minute TTL: historical data doesn't change minute-to-minute
-  return fetchWithCache<{ prices: [number, number][] }>(url, 300_000);
+  return fetchWithCache<{ prices: [number, number][] }>(url.toString(), 300_000);
 }
