@@ -34,7 +34,7 @@ export default function Terms() {
           body: [
             SITE + " is an informational and educational platform providing cryptocurrency market data, analytics, tools, and commentary for general informational purposes only.",
             "We are not a licensed financial adviser, broker, dealer, investment adviser, or exchange. Nothing on this site constitutes financial, investment, tax, or legal advice.",
-            "All market data is sourced from third parties (including CoinGecko) and may be delayed, inaccurate, or incomplete. We make no warranties regarding accuracy or timeliness.",
+            "All market data is sourced from third parties (including CoinMarketCap) and may be delayed, inaccurate, or incomplete. We make no warranties regarding accuracy or timeliness.",
           ],
         },
         {
@@ -66,7 +66,7 @@ export default function Terms() {
           title: "5. Intellectual Property",
           body: [
             "All original content on " + SITE + ", including text, graphics, design, and code, is the property of AIFirstCrypto and is protected by applicable intellectual property laws.",
-            "Market data sourced from CoinGecko remains subject to CoinGecko's own terms and licensing.",
+            "Market data sourced from CoinMarketCap remains subject to CoinMarketCap's own terms and licensing.",
             "You may share individual pieces of content for non-commercial, educational purposes with attribution. You may not reproduce the site in bulk or for commercial purposes without written permission.",
           ],
         },

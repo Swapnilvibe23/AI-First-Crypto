@@ -13,6 +13,7 @@ import TopMovers from "@/pages/top-movers";
 import FearGreed from "@/pages/fear-greed";
 import CoinDetail from "@/pages/coin-detail";
 import Resources from "@/pages/resources";
+import Watchlist from "@/pages/watchlist";
 import Compare from "@/pages/compare";
 import DCA from "@/pages/dca";
 import Exchanges from "@/pages/exchanges";
@@ -37,6 +38,7 @@ function Router() {
         <Route path="/rates" component={Rates} />
         <Route path="/top-movers" component={TopMovers} />
         <Route path="/fear-greed" component={FearGreed} />
+        <Route path="/watchlist" component={Watchlist} />
         <Route path="/coin/:id" component={CoinDetail} />
         <Route path="/compare" component={Compare} />
         <Route path="/dca" component={DCA} />

@@ -59,7 +59,7 @@ export default function Disclaimer() {
         {
           title: "Data Accuracy",
           body: [
-            "Market data displayed on " + SITE + " is sourced from CoinGecko's public API and is provided without warranty of accuracy, completeness, or timeliness.",
+            "Market data displayed on " + SITE + " is sourced from CoinMarketCap and is provided without warranty of accuracy, completeness, or timeliness.",
             "Prices and market statistics may be delayed, temporarily unavailable, or subject to API rate limiting. Do not rely solely on data displayed here for trading decisions.",
             "AI-generated market summaries are automated outputs and may contain errors or omissions. They are not a substitute for independent research.",
             "DCA Calculator results are simulations based on historical data and are purely hypothetical. They do not guarantee future returns.",
