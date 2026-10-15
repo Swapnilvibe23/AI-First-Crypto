@@ -8,9 +8,10 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/sanitize.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/sanitize.test.ts src/lib/ingest.test.ts"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.13",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "cookie-parser": "^1.4.7",

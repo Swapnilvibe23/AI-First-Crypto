@@ -34,7 +34,7 @@ describe("safeHttpUrl", () => {
 });
 
 describe("coin ids", () => {
-  it("accepts coingecko slugs and rejects path tricks", () => {
+  it("accepts coin slugs and rejects path tricks", () => {
     assert.equal(isCoinId("bitcoin"), true);
     assert.equal(isCoinId("yield-guild-games"), true);
     assert.equal(isCoinId("../bitcoin"), false);
@@ -45,10 +45,10 @@ describe("coin ids", () => {
 });
 
 describe("upstream hosts", () => {
-  const allowed = new Set(["api.coingecko.com"]);
+  const allowed = new Set(["pro-api.coinmarketcap.com"]);
 
   it("blocks local and metadata hosts", () => {
-    assert.equal(isBlockedHostname("api.coingecko.com"), false);
+    assert.equal(isBlockedHostname("pro-api.coinmarketcap.com"), false);
     assert.equal(isBlockedHostname("localhost"), true);
     assert.equal(isBlockedHostname("127.0.0.1"), true);
     assert.equal(isBlockedHostname("169.254.169.254"), true);
@@ -57,12 +57,12 @@ describe("upstream hosts", () => {
   });
 
   it("refuses off-allowlist and non-https redirects", () => {
-    const current = new URL("https://api.coingecko.com/api/v3/global");
-    assert.throws(() => nextHttpsUrl(current, "http://api.coingecko.com/next", allowed, "allowlist"));
+    const current = new URL("https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest");
+    assert.throws(() => nextHttpsUrl(current, "http://pro-api.coinmarketcap.com/next", allowed, "allowlist"));
     assert.throws(() => nextHttpsUrl(current, "https://evil.example/next", allowed, "allowlist"));
     assert.throws(() => nextHttpsUrl(current, "https://169.254.169.254/", allowed, "public"));
-    const same = nextHttpsUrl(current, "/api/v3/ping", allowed, "allowlist");
-    assert.equal(same.hostname, "api.coingecko.com");
+    const same = nextHttpsUrl(current, "/v1/key/info", allowed, "allowlist");
+    assert.equal(same.hostname, "pro-api.coinmarketcap.com");
   });
 });
 
