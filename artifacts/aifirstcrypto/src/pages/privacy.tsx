@@ -53,7 +53,7 @@ export default function Privacy() {
           body: [
             "Some links on this site are affiliate links, including links to cryptocurrency exchanges such as Coinbase, Binance, Kraken, Gemini, and others. If you click an affiliate link and sign up or make a purchase, we may receive a commission at no additional cost to you.",
             "Clicking an affiliate link means you will be redirected to a third-party website. We are not responsible for the privacy practices or content of those third-party sites. We encourage you to review their privacy policies.",
-            "We use CoinGecko's public API for all market data. CoinGecko's own Terms of Service and Privacy Policy apply to data sourced from their platform.",
+            "We use CoinMarketCap for market price data. CoinMarketCap's own Terms of Service and Privacy Policy apply to data sourced from their platform.",
           ],
         },
         {

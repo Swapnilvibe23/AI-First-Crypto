@@ -645,7 +645,7 @@ export default function DCA() {
       {isError && !isLoading && (
         <Alert className="border-red-500/20 bg-red-500/5">
           <AlertDescription className="flex items-center justify-between">
-            <span className="text-red-400 text-sm">Could not load price history. CoinGecko may be rate-limiting — try again in a moment.</span>
+            <span className="text-red-400 text-sm">Could not load price history. Please try again in a moment.</span>
             <button onClick={() => refetch()} className="ml-4 text-xs px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0">
               Retry
             </button>

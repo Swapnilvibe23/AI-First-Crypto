@@ -497,10 +497,10 @@ export default function FearGreed() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 Trending Search Spotlight
-                <InfoTooltip content="The top 10 most-searched coins on CoinGecko right now. The Buzz Factor shows how much a coin is being searched relative to its market cap size — a high buzz on a small coin means outsized hype." />
+                <InfoTooltip content="The top 10 most-searched coins on CoinMarketCap right now. The Buzz Factor shows how much a coin is being searched relative to its market cap size — a high buzz on a small coin means outsized hype." />
               </CardTitle>
               <CardDescription>
-                Most searched coins on CoinGecko · Live data · Refreshes every 2 min
+                Most searched coins on CoinMarketCap · Live data · Refreshes every 2 min
               </CardDescription>
             </div>
             {!loadingTrending && trendingChartData.length > 0 && (
@@ -573,7 +573,15 @@ export default function FearGreed() {
               </div>
 
               <p className="text-xs text-muted-foreground mt-3 text-center">
-                Bar length = trending intensity (rank #1 is longest) · Hover a bar for full details · Source: CoinGecko
+                Bar length = trending intensity (rank #1 is longest) · Hover a bar for full details · Source:{" "}
+                <a
+                  href="https://coinmarketcap.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  CoinMarketCap
+                </a>
               </p>
             </>
           )}

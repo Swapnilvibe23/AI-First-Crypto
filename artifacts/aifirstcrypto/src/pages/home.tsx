@@ -437,8 +437,8 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
         <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
           🔥 Coin of the Day
         </span>
-        <span className="text-xs text-muted-foreground">— Trending #1 on CoinGecko right now</span>
-        <InfoTooltip content="The coin being searched most on CoinGecko today. High search interest often precedes price movement — it doesn't mean you should buy it, just that the crowd is watching it." />
+        <span className="text-xs text-muted-foreground">— Trending #1 on CoinMarketCap right now</span>
+        <InfoTooltip content="The coin being searched most on CoinMarketCap today. High search interest often precedes price movement — it doesn't mean you should buy it, just that the crowd is watching it." />
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -517,7 +517,16 @@ function CoinOfTheDay({ coinId, coinName, coinSymbol, coinThumb, marketCapRank }
 
       {/* Footer note */}
       <p className="text-[11px] text-muted-foreground/60 mt-5 leading-snug">
-        Updated every 2 minutes · Source: CoinGecko · Not financial advice
+        Updated every 2 minutes · Source:{" "}
+        <a
+          href="https://coinmarketcap.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-foreground"
+        >
+          CoinMarketCap
+        </a>
+        {" "}· Not financial advice
       </p>
     </div>
   );
@@ -592,11 +601,18 @@ export default function Home() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-3 mt-4">
-          <Link href="/rates">
-            <Button size="lg" className="rounded-full font-bold shadow-lg shadow-primary/20">
-              View Live Rates <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          {[
+            { href: "/rates", label: "View Live Rates" },
+            { href: "/top-movers", label: "View Top Movers" },
+            { href: "/watchlist", label: "Save Your Watchlist" },
+            { href: "/resources", label: "Explore Resources" },
+          ].map((cta) => (
+            <Link key={cta.href} href={cta.href}>
+              <Button size="lg" className="rounded-full font-bold shadow-lg shadow-primary/20">
+                {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -607,7 +623,7 @@ export default function Home() {
             icon: BarChart2,
             step: "01",
             title: "Live data, every refresh",
-            body: "Prices, market cap, volume, and top movers pull directly from CoinGecko — no stale numbers, no ads.",
+            body: "Prices, market cap, volume, and top movers come from CoinMarketCap — no ads.",
             color: "text-blue-400",
             border: "border-blue-500/20",
             bg: "from-blue-500/8 to-card",
@@ -1017,10 +1033,10 @@ export default function Home() {
                 <div>
                   <h2 className="text-xl font-bold flex items-center gap-2">
                     🔥 What's Trending Right Now
-                    <InfoTooltip content="The 7 most searched and viewed coins on CoinGecko in the last 24 hours. High search interest often precedes price movement — worth keeping an eye on." />
+                    <InfoTooltip content="The 7 most searched and viewed coins on CoinMarketCap in the last 24 hours. High search interest often precedes price movement — worth keeping an eye on." />
                   </h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Most searched coins on CoinGecko in the last 24 hours
+                    Most searched coins on CoinMarketCap in the last 24 hours
                   </p>
                 </div>
               </div>
@@ -1112,7 +1128,7 @@ export default function Home() {
                 <AccordionItem value="faq-2">
                   <AccordionTrigger>Where does the data come from?</AccordionTrigger>
                   <AccordionContent>
-                    Live pricing and market data come from CoinGecko, while the Fear & Greed index comes from Alternative.me.
+                    Live pricing and market data come from CoinMarketCap, while the Fear & Greed index comes from Alternative.me.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="faq-3">

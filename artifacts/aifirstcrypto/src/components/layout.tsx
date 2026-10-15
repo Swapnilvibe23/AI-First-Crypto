@@ -11,6 +11,7 @@ import {
   Bell,
   Calculator,
   ArrowRightLeft,
+  Bookmark,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<"accepted" | "declined" | null>(null);
   const { alerts } = useAlerts();
@@ -50,6 +51,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/rates", label: "Live Rates", icon: LineChart },
     { href: "/top-movers", label: "Top Movers", icon: TrendingUp },
     { href: "/fear-greed", label: "Fear & Greed", icon: Wallet },
+    { href: "/watchlist", label: "Watchlist", icon: Bookmark },
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/dca", label: "DCA Calc", icon: Calculator },
     { href: "/exchanges", label: "Exchanges", icon: ArrowRightLeft },
@@ -97,7 +99,10 @@ export function Layout({ children }: LayoutProps) {
                   variant="ghost"
                   size="icon"
                   className="relative h-9 w-9"
-                  onClick={closeMenu}
+                  onClick={() => {
+                    closeMenu();
+                    setLocation("/watchlist");
+                  }}
                   aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
                 >
                   <Bell
@@ -178,7 +183,11 @@ export function Layout({ children }: LayoutProps) {
             <div className="space-y-1">
               <p className="font-semibold">We use cookies</p>
               <p className="text-sm text-muted-foreground">
-                We use essential cookies and local storage to keep your preferences working. See our Privacy Policy for details.
+                We use essential cookies and local storage to keep your preferences working. See our{" "}
+                <Link href="/privacy" className="underline hover:text-foreground">
+                  Privacy Policy
+                </Link>{" "}
+                for details.
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -220,6 +229,7 @@ export function Layout({ children }: LayoutProps) {
                   { href: "/fear-greed", label: "Fear & Greed" },
                   { href: "/compare", label: "Compare" },
                   { href: "/dca", label: "DCA Calculator" },
+                  { href: "/watchlist", label: "Watchlist" },
                 ].map(l => (
                   <li key={l.href}>
                     <Link href={l.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -275,7 +285,7 @@ export function Layout({ children }: LayoutProps) {
             </p>
             <p className="text-[11px] text-muted-foreground">
               Market data sourced from{" "}
-              <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">CoinGecko</a>.
+              <a href="https://coinmarketcap.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">CoinMarketCap</a>.
               {" "}&copy; {new Date().getFullYear()} AIFirstCrypto. All rights reserved.
             </p>
           </div>

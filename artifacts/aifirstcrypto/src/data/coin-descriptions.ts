@@ -1,6 +1,6 @@
 /**
  * Plain-English one-liner descriptions for the top ~80 coins.
- * Keyed by CoinGecko coin ID. Used on coin detail pages.
+ * Keyed by coin slug (the same slug CoinMarketCap uses). Used on coin detail pages.
  */
 export const COIN_DESCRIPTIONS: Record<string, string> = {
   bitcoin:
