@@ -16,7 +16,6 @@ import {
   fetchDailyHistory,
   fetchGlobalMetrics,
   fetchListings,
-  type CoinRecord,
   type CreditInfo,
 } from "./market-data";
 import {
@@ -31,6 +30,7 @@ import {
   type HistoryPoint,
   type IngestStatus,
 } from "./market-store";
+import { dedupeByRank, freshListingCoins } from "./listing-coins";
 import { UpstreamHttpError } from "./upstream";
 
 const HOUR_MS = 3_600_000;
@@ -76,13 +76,6 @@ async function pool<T>(items: T[], size: number, fn: (item: T) => Promise<void>)
   await Promise.all(workers);
 }
 
-function dedupeByRank(coins: CoinRecord[]): CoinRecord[] {
-  const seen = new Set<string>();
-  return coins
-    .filter((coin) => (seen.has(coin.id) ? false : (seen.add(coin.id), true)))
-    .sort((a, b) => a.market_cap_rank - b.market_cap_rank);
-}
-
 /** Credits that can go to backfill without eating into the regular schedule. */
 export function spareCredits(info: CreditInfo | null, usedThisRun: number, now: Date): number {
   if (!info || (info.day_left === null && info.month_left === null)) return 0;
@@ -126,10 +119,12 @@ export async function runMarketIngest(now = new Date()) {
 
   // Top 100: every run.
   let top = storedTop?.coins ?? [];
+  let topFresh = false;
   try {
     const result = await fetchListings(1, 100);
     credits += result.credits;
     top = result.data;
+    topFresh = true;
     await writeJSON(KEYS.coinsTop, { updated_at: nowIso, coins: top } satisfies CoinsSnapshot);
   } catch (err) {
     errors.push(`top 100: ${message(err)}`);
@@ -150,12 +145,14 @@ export async function runMarketIngest(now = new Date()) {
 
   // Hourly: ranks 101–200, hourly history and sparklines.
   let rest = storedRest?.coins ?? [];
+  let restFresh = false;
   const hourlyDue = status.last_hour_key !== hourKey;
   if (hourlyDue) {
     try {
       const result = await fetchListings(101, 100);
       credits += result.credits;
       rest = result.data;
+      restFresh = true;
       await writeJSON(KEYS.coinsRest, { updated_at: nowIso, coins: rest } satisfies CoinsSnapshot);
     } catch (err) {
       errors.push(`ranks 101-200: ${message(err)}`);
@@ -163,20 +160,26 @@ export async function runMarketIngest(now = new Date()) {
   }
 
   const tracked = dedupeByRank([...top, ...rest]);
+  const freshTracked = freshListingCoins(top, topFresh, rest, restFresh);
+  const freshById = new Map(freshTracked.map((coin) => [coin.id, coin]));
 
   if (hourlyDue && tracked.length > 0) {
     try {
       const sparklines: Record<string, number[]> = {};
       const weekAgo = now.getTime() - 7 * DAY_MS;
       await pool(tracked, WRITE_CONCURRENCY, async (coin) => {
-        const points = mergeHistory(
-          await readHistory(KEYS.hourly(coin.id)),
-          [[now.getTime(), coin.current_price]],
-          HOUR_MS,
-          HOURLY_RETENTION_MS,
-          now.getTime(),
-        );
-        await writeJSON(KEYS.hourly(coin.id), { points });
+        const existing = await readHistory(KEYS.hourly(coin.id));
+        const freshCoin = freshById.get(coin.id);
+        const points = freshCoin
+          ? mergeHistory(
+              existing,
+              [[now.getTime(), freshCoin.current_price]],
+              HOUR_MS,
+              HOURLY_RETENTION_MS,
+              now.getTime(),
+            )
+          : existing;
+        if (freshCoin) await writeJSON(KEYS.hourly(coin.id), { points });
         sparklines[coin.id] = points
           .filter(([ts]) => ts >= weekAgo)
           .slice(-SPARKLINE_POINTS)
@@ -199,7 +202,7 @@ export async function runMarketIngest(now = new Date()) {
       errors.push(`coin info: ${message(err)}`);
     }
     try {
-      await pool(tracked, WRITE_CONCURRENCY, async (coin) => {
+      await pool(freshTracked, WRITE_CONCURRENCY, async (coin) => {
         const points = mergeHistory(
           await readHistory(KEYS.daily(coin.id)),
           [[now.getTime(), coin.current_price]],
