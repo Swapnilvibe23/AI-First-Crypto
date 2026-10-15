@@ -8,15 +8,11 @@ import {
   Menu,
   X,
   GitCompareArrows,
-  Bell,
   Calculator,
   ArrowRightLeft,
-  Bookmark,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAlerts } from "@/hooks/use-alerts";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { NewsletterStrip } from "@/components/newsletter-strip";
 import { ScrollToTop } from "@/components/scroll-to-top";
 
@@ -28,8 +24,6 @@ export function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<"accepted" | "declined" | null>(null);
-  const { alerts } = useAlerts();
-  const alertCount = alerts.length;
 
   useEffect(() => {
     const stored = window.localStorage.getItem("cookie-consent");
@@ -51,7 +45,6 @@ export function Layout({ children }: LayoutProps) {
     { href: "/rates", label: "Live Rates", icon: LineChart },
     { href: "/top-movers", label: "Top Movers", icon: TrendingUp },
     { href: "/fear-greed", label: "Fear & Greed", icon: Wallet },
-    { href: "/watchlist", label: "Watchlist", icon: Bookmark },
     { href: "/compare", label: "Compare", icon: GitCompareArrows },
     { href: "/dca", label: "DCA Calc", icon: Calculator },
     { href: "/exchanges", label: "Exchanges", icon: ArrowRightLeft },
@@ -90,43 +83,7 @@ export function Layout({ children }: LayoutProps) {
             })}
           </nav>
 
-          {/* Right side: Bell icon + mobile hamburger */}
-          <div className="flex items-center gap-1">
-            {/* Alert bell — always visible, disappears when 0 alerts */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
-                  <Link
-                    href="/watchlist"
-                    onClick={closeMenu}
-                    aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
-                  >
-                    <Bell
-                      className={`h-4.5 w-4.5 transition-colors ${
-                        alertCount > 0
-                          ? "text-foreground"
-                          : "text-muted-foreground/50"
-                      }`}
-                    />
-                    {alertCount > 0 && (
-                      <>
-                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
-                        <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
-                          {alertCount > 9 ? "" : alertCount}
-                        </span>
-                      </>
-                    )}
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                {alertCount > 0
-                  ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}`
-                  : "No active price alerts"}
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Mobile Menu Toggle */}
+          <div className="flex items-center md:hidden">
             <Button
               variant="ghost"
               size="icon"
@@ -226,7 +183,6 @@ export function Layout({ children }: LayoutProps) {
                   { href: "/fear-greed", label: "Fear & Greed" },
                   { href: "/compare", label: "Compare" },
                   { href: "/dca", label: "DCA Calculator" },
-                  { href: "/watchlist", label: "Watchlist" },
                 ].map(l => (
                   <li key={l.href}>
                     <Link href={l.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
