@@ -1,7 +1,7 @@
 import express, { type ErrorRequestHandler, type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
-import router from "./routes";
+import { handleApiRequest } from "./api";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -82,7 +82,18 @@ app.use(
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: false, limit: "16kb" }));
 
-app.use("/api", router);
+app.use("/api", async (req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    next();
+    return;
+  }
+  try {
+    const result = await handleApiRequest(new URL(req.originalUrl, "http://localhost"), req.log);
+    res.status(result.status).set(result.headers).json(result.body);
+  } catch (err) {
+    next(err);
+  }
+});
 
 const handleError: ErrorRequestHandler = (err, req, res, next) => {
   if (res.headersSent) {
