@@ -338,7 +338,7 @@ function drawCard(
   y += 66;
   txt("AIFirstCrypto.com/top-movers", CW / 2, y + 34, { size: 40, weight: "800", color: "#3b82f6", align: "center" });
   y += 66;
-  txt("Data: CoinGecko · Not financial advice", CW / 2, y + 26, {
+  txt("Data: CoinMarketCap · Not financial advice", CW / 2, y + 26, {
     size: 21, color: "#1e293b", align: "center",
   });
 }

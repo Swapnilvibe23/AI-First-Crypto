@@ -404,7 +404,7 @@ function drawCard(ctx: CanvasRenderingContext2D, d: StoryCardData) {
   txt("AIFirstCrypto.com/dca", CW / 2, y + 34, { size: 42, weight: "800", color: "#3b82f6", align: "center" });
   y += 70;
   txt(
-    "Not financial advice · Data: CoinGecko · Educational purposes only",
+    "Not financial advice · Data: CoinMarketCap · Educational purposes only",
     CW / 2, y + 28,
     { size: 21, color: "#1e293b", align: "center" },
   );
