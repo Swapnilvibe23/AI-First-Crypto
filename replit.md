@@ -35,10 +35,19 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 
-## Data Sources
+## Data Sources (Free Public APIs — No Keys Required)
 
-- **CoinMarketCap** (`pro-api.coinmarketcap.com`) — prices, market data, coin details, and daily price history. Only the scheduled ingest reads `CMC_API_KEY` (`artifacts/aifirstcrypto/netlify/functions/market-ingest.mts`, every 15 minutes). Visitor pages read the stored snapshot and never call CoinMarketCap. Trending is not on the current data plan, so `/api/market/trending` returns `[]`. The real key belongs in the local secret store or Netlify functions scope, never in the browser bundle. See `.env.example`.
-- **Alternative.me** (`api.alternative.me/fng/`) — Fear & Greed index. No API key. `feargreed.ts` keeps a short in-memory cache.
+- **CoinGecko** (`api.coingecko.com/api/v3`) — live prices, market data, trending, coin details, price history
+- **Alternative.me** (`api.alternative.me/fng/`) — Fear & Greed index
+
+## Caching Strategy (coingecko.ts)
+
+- In-memory cache with configurable TTL per endpoint
+- **Stale-while-revalidate**: expired entries served immediately while background refresh runs
+- **In-flight deduplication**: concurrent requests for same URL share one fetch (prevents burst rate-limiting)
+- **429 retry**: jittered ~2s retry on rate limit before giving up
+- **Stale fallback**: 429/5xx always returns stale cache rather than throwing when data exists
+- TTLs: global=2min, coins=1min, trending=2min, coin detail=90s, **coin history=5min**
 
 ## Key Features Built
 
@@ -55,10 +64,10 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 - All affiliate links use `rel="noopener noreferrer sponsored"` and include clear disclosure text
 
 ### Legal Pages
-- `/privacy` — covers localStorage-only data model, newsletter disclosure, CoinMarketCap, affiliate links
+- `/privacy` — covers localStorage-only data model, Beehiiv newsletter, CoinGecko, affiliate links
 - `/terms` — no-financial-advice, acceptable use, IP, limitation of liability
 - `/disclaimer` — risk warning, data accuracy, affiliate disclosure, tax notice
-- Footer: 4-column grid (brand · Tools · More · Legal) with links to all three legal pages + CoinMarketCap attribution
+- Footer: 4-column grid (brand · Tools · More · Legal) with links to all three legal pages + CoinGecko attribution
 
 ### Price Alerts
 - `use-alerts.ts` hook — localStorage-based, checks every 60s via `AlertChecker`
@@ -74,7 +83,7 @@ pnpm workspace monorepo using TypeScript. Mobile-first crypto dashboard — AIFi
 ### Content
 - Beginner's Glossary: 71 terms, 6 categories (Basics, Market, Technology, Trading, Security, Slang)
 - Term of the Day: deterministic rotation via `Math.floor(Date.now() / 86_400_000) % GLOSSARY.length`
-- Beehiiv newsletter strip is not rendered until a real publication URL is confirmed
+- Beehiiv newsletter strip (dismissible, persists via localStorage key `aifirstcrypto_newsletter_dismissed`)
 
 ## localStorage Keys
 
@@ -104,8 +113,8 @@ artifacts/
       lib/             # format.ts utils
   api-server/          # Express 5 backend (served at /api)
     src/
-      api.ts           # public GET handlers; reads stored snapshots and does not call CoinMarketCap
-      lib/             # market-data.ts (CoinMarketCap client), ingest.ts, market-store.ts, feargreed.ts, summary.ts
+      routes/          # market.ts, coins.ts, sentiment.ts, health.ts, news.ts
+      lib/             # coingecko.ts (with rate-limit resilience), feargreed.ts, summary.ts
 
 lib/
   api-spec/openapi.yaml  # Single source of truth for API contract
@@ -115,8 +124,8 @@ lib/
 
 ## Important Notes
 
-- No SQL database — market snapshots live in Netlify Blobs, written by the 15-minute CoinMarketCap ingest. Fear & Greed still comes from Alternative.me.
+- No database needed — all data fetched from free public APIs
 - Market summary uses deterministic template logic (no paid LLM)
 - `lib/api-zod/src/index.ts` manually avoids re-exporting types that conflict with Zod schemas
 - Sparkline component uses explicit pixel dimensions (not ResponsiveContainer) to avoid Recharts 0x0 warning inside table cells
-- Newsletter strip stays hidden until a confirmed Beehiiv URL returns a successful page. `https://aifirstcrypto.beehiiv.com/subscribe` returned HTTP 404.
+- BEEHIIV URL in `newsletter-strip.tsx` is a placeholder — replace when ready to launch

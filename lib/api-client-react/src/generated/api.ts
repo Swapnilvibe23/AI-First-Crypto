@@ -287,7 +287,7 @@ export function useGetCoins<
 }
 
 /**
- * Currently trending coins. Empty on the current CoinMarketCap data plan, which does not include trending.
+ * Currently trending coins on CoinGecko
  * @summary Trending coins
  */
 export const getGetTrendingUrl = () => {

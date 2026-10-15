@@ -88,7 +88,7 @@ paths:
       operationId: getTrending
       tags: [market]
       summary: Trending coins
-      description: Currently trending coins. Empty on the current CoinMarketCap data plan, which does not include trending.
+      description: Currently trending coins on CoinGecko
       responses:
         "200":
           description: Trending coins list

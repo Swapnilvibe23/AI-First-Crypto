@@ -61,7 +61,7 @@ export const GetCoinsResponseItem = zod.object({
 export const GetCoinsResponse = zod.array(GetCoinsResponseItem);
 
 /**
- * Currently trending coins. Empty on the current CoinMarketCap data plan, which does not include trending.
+ * Currently trending coins on CoinGecko
  * @summary Trending coins
  */
 export const GetTrendingResponseItem = zod.object({

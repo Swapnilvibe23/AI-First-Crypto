@@ -47,8 +47,3 @@ Thumbs.db
 # Replit
 .cache/
 .local/
-
-# Secrets. The example file names CMC_API_KEY with an empty value.
-.env
-.env.*
-!.env.example
