@@ -607,11 +607,16 @@ export default function Home() {
             { href: "/watchlist", label: "Save Your Watchlist" },
             { href: "/resources", label: "Explore Resources" },
           ].map((cta) => (
-            <Link key={cta.href} href={cta.href}>
-              <Button size="lg" className="rounded-full font-bold shadow-lg shadow-primary/20">
+            <Button
+              key={cta.href}
+              asChild
+              size="lg"
+              className="rounded-full font-bold shadow-lg shadow-primary/20"
+            >
+              <Link href={cta.href}>
                 {cta.label} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           ))}
         </div>
       </section>

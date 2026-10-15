@@ -25,7 +25,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cookieConsent, setCookieConsent] = useState<"accepted" | "declined" | null>(null);
   const { alerts } = useAlerts();
@@ -95,31 +95,28 @@ export function Layout({ children }: LayoutProps) {
             {/* Alert bell — always visible, disappears when 0 alerts */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-9 w-9"
-                  onClick={() => {
-                    closeMenu();
-                    setLocation("/watchlist");
-                  }}
-                  aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
-                >
-                  <Bell
-                    className={`h-4.5 w-4.5 transition-colors ${
-                      alertCount > 0
-                        ? "text-foreground"
-                        : "text-muted-foreground/50"
-                    }`}
-                  />
-                  {alertCount > 0 && (
-                    <>
-                      <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
-                      <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
-                        {alertCount > 9 ? "" : alertCount}
-                      </span>
-                    </>
-                  )}
+                <Button variant="ghost" size="icon" className="relative h-9 w-9" asChild>
+                  <Link
+                    href="/watchlist"
+                    onClick={closeMenu}
+                    aria-label={alertCount > 0 ? `${alertCount} active price alert${alertCount !== 1 ? "s" : ""}` : "Price alerts"}
+                  >
+                    <Bell
+                      className={`h-4.5 w-4.5 transition-colors ${
+                        alertCount > 0
+                          ? "text-foreground"
+                          : "text-muted-foreground/50"
+                      }`}
+                    />
+                    {alertCount > 0 && (
+                      <>
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 flex items-center justify-center rounded-full bg-red-500 text-white text-[8px] font-bold leading-none">
+                          {alertCount > 9 ? "" : alertCount}
+                        </span>
+                      </>
+                    )}
+                  </Link>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">

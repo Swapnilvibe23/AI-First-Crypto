@@ -497,10 +497,16 @@ export default function FearGreed() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 Trending Search Spotlight
-                <InfoTooltip content="The top 10 most-searched coins on CoinMarketCap right now. The Buzz Factor shows how much a coin is being searched relative to its market cap size — a high buzz on a small coin means outsized hype." />
+                {trendingChartData.length > 0 && (
+                  <InfoTooltip content="The top 10 most-searched coins on CoinMarketCap right now. The Buzz Factor shows how much a coin is being searched relative to its market cap size — a high buzz on a small coin means outsized hype." />
+                )}
               </CardTitle>
               <CardDescription>
-                Most searched coins on CoinMarketCap · Live data · Refreshes every 2 min
+                {loadingTrending
+                  ? "Loading trending data..."
+                  : trendingChartData.length > 0
+                    ? "Most searched coins on CoinMarketCap · Live data · Refreshes every 2 min"
+                    : "No trending data available"}
               </CardDescription>
             </div>
             {!loadingTrending && trendingChartData.length > 0 && (
