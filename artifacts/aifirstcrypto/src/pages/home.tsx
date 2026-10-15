@@ -604,7 +604,6 @@ export default function Home() {
           {[
             { href: "/rates", label: "View Live Rates" },
             { href: "/top-movers", label: "View Top Movers" },
-            { href: "/watchlist", label: "Save Your Watchlist" },
             { href: "/resources", label: "Explore Resources" },
           ].map((cta) => (
             <Button
