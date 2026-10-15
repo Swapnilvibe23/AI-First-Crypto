@@ -1,5 +1,5 @@
 /**
- * Bounds and encoding for untrusted CoinGecko, RSS, and request data.
+ * Bounds and encoding for untrusted market-data, RSS, and request data.
  * CybeDefend owasp-2025-a05 / owasp-2025-a06: upstream fields are not HTML
  * or URLs until they pass these checks.
  */
@@ -18,7 +18,7 @@ export type CoinOrder = (typeof COIN_ORDERS)[number];
 export const LIMITS = {
   page: { min: 1, max: 100 },
   perPage: { min: 1, max: 250 },
-  // CoinGecko's public market_chart API rejects ranges above 365 days.
+  // Stored daily history covers one year.
   days: { min: 1, max: 365 },
   news: { min: 1, max: 50 },
   fearGreed: { min: 1, max: 365 },
