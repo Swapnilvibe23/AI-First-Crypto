@@ -167,9 +167,16 @@ overrides:
   "path-to-regexp": "8.4.2"
   "picomatch@2": "2.3.2"
   "picomatch@4": "4.0.4"
-  "postcss": "8.5.13"
+  "postcss": "8.5.23"
   "yaml": "2.8.3"
   # Express 5.3.0 security releases: proxy-addr CVE-2026-90711, qs CVE-2026-2391/82417/82562, body-parser CVE-2026-12590
   "proxy-addr": "2.0.8"
   "qs": "6.16.1"
   "body-parser": "2.3.0"
+  # Remaining GHSA pins (also listed in root package.json pnpm.overrides)
+  "@babel/core": "7.29.6"
+  "baseline-browser-mapping": "2.11.0"
+  "browserslist": "4.28.7"
+  "fast-copy": "4.1.0"
+  "fast-uri": "3.1.8"
+  "nanoid@3": "3.3.18"
