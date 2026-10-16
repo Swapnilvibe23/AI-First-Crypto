@@ -214,7 +214,8 @@ export const GetNewsResponseItem = zod.object({
   "link": zod.string(),
   "pubDate": zod.string(),
   "source": zod.string(),
-  "sentiment": zod.enum(['bullish', 'bearish', 'neutral'])
+  "sentiment": zod.enum(['bullish', 'bearish', 'neutral']),
+  "imageUrl": zod.string().optional().describe('Optional article image URL from the RSS feed')
 })
 export const GetNewsResponse = zod.array(GetNewsResponseItem)
 

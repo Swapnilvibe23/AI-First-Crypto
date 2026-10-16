@@ -107,6 +107,8 @@ export interface NewsItem {
   pubDate: string;
   source: string;
   sentiment: NewsItemSentiment;
+  /** Optional article image URL from the RSS feed */
+  imageUrl?: string;
 }
 
 export interface FearGreedHistoryPoint {
