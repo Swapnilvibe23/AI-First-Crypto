@@ -41,6 +41,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Environment files — keep local secrets out of git
+.env
+.env.*
+
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
