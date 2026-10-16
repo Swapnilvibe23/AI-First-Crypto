@@ -9,6 +9,9 @@
   "dependencies": {
     "@tanstack/react-query": "catalog:"
   },
+  "scripts": {
+    "test": "node --experimental-strip-types --test custom-fetch.test.ts"
+  },
   "peerDependencies": {
     "react": ">=18"
   }
