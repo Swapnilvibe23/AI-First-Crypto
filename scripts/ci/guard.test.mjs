@@ -19,9 +19,9 @@ const HEADERS_OK = `/*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'
 `;
 
-const HEADERS_NO_SCRIPT_SRC = `/*
-  Content-Security-Policy: default-src 'self'; style-src 'self'
-`;
+function headersWithCsp(csp) {
+  return `/*\n  Content-Security-Policy: ${csp}\n`;
+}
 
 function layout(extra) {
   return {
@@ -39,14 +39,132 @@ test("fails when no Netlify _headers file exists", () => {
   assert.ok(errors.some((e) => /_headers/i.test(e)));
 });
 
-test("fails when CSP lacks script-src 'self'", () => {
+test("fails when CSP lacks 'self' in script-src", () => {
   const dir = fixture(
     layout({
-      "artifacts/aifirstcrypto/public/_headers": HEADERS_NO_SCRIPT_SRC,
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src https://cdn.example; style-src 'self'",
+      ),
     }),
   );
   const errors = runGuards(dir);
-  assert.ok(errors.some((e) => /script-src 'self'/.test(e)));
+  assert.ok(errors.some((e) => /'self'/i.test(e)));
+});
+
+test("falls back to default-src 'self' when script-src is absent", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; style-src 'self'",
+      ),
+    }),
+  );
+  assert.deepEqual(runGuards(dir), []);
+});
+
+test("fails when script-src is absent and default-src lacks 'self'", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp("style-src 'self'"),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /'self'/i.test(e)));
+});
+
+test("fails when script-src contains 'unsafe-inline'", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' 'unsafe-inline'",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /unsafe-inline/i.test(e)));
+});
+
+test("fails when script-src contains 'unsafe-eval'", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' 'unsafe-eval'",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /unsafe-eval/i.test(e)));
+});
+
+test("fails when script-src contains another 'unsafe-*' keyword", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' 'unsafe-hashes'",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /unsafe-hashes/i.test(e)));
+});
+
+test("fails when script-src contains a bare *", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' *",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /\*/.test(e)));
+});
+
+test("fails when script-src contains data:", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' data:",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /data:/i.test(e)));
+});
+
+test("fails when script-src contains http: scheme", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' http:",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /http:/i.test(e)));
+});
+
+test("fails when script-src contains an http:// source", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self' http://cdn.example",
+      ),
+    }),
+  );
+  const errors = runGuards(dir);
+  assert.ok(errors.some((e) => /http:\/\//i.test(e)));
+});
+
+test("does not flag style-src 'unsafe-inline' or font-src data:", () => {
+  const dir = fixture(
+    layout({
+      "artifacts/aifirstcrypto/public/_headers": headersWithCsp(
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:",
+      ),
+    }),
+  );
+  assert.deepEqual(runGuards(dir), []);
 });
 
 test("passes official exchange <a> with noopener noreferrer", () => {

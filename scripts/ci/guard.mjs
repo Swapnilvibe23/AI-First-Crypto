@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * CI guard: Netlify CSP must include script-src 'self', and exchange <a>
- * tags in artifacts/aifirstcrypto/src must use official domains plus
- * rel="noopener noreferrer".
+ * CI guard: Netlify CSP script-src (or default-src if script-src is absent)
+ * must include 'self' and must not allow 'unsafe-*', *, data:, http:, or
+ * http:// sources. Exchange <a> tags in artifacts/aifirstcrypto/src must
+ * use official domains plus rel="noopener noreferrer".
  *
  * TODO(#28): require rel=sponsored once affiliate tracking links exist.
  */
@@ -197,6 +198,50 @@ function lintSourceFile(file, source, errors) {
   }
 }
 
+function parseCspDirectives(headerValue) {
+  const directives = new Map();
+  for (const part of headerValue.split(";")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const [name, ...rest] = trimmed.split(/\s+/);
+    directives.set(name.toLowerCase(), rest);
+  }
+  return directives;
+}
+
+function hasSelf(tokens) {
+  return tokens.some((token) => token.toLowerCase() === "'self'");
+}
+
+export function forbiddenScriptSrcReason(token) {
+  const t = String(token).toLowerCase();
+  if (t === "'unsafe-inline'" || t === "'unsafe-eval'" || /^'unsafe-/.test(t)) return token;
+  if (t === "*") return token;
+  if (t === "data:" || t.startsWith("data:")) return token;
+  if (t === "http:") return token;
+  if (t.startsWith("http://")) return token;
+  return null;
+}
+
+function lintCspHeader(file, headerLine, errors) {
+  const value = headerLine.replace(/^\s*Content-Security-Policy:\s*/i, "");
+  const directives = parseCspDirectives(value);
+  const scriptSrc = directives.get("script-src");
+  const defaultSrc = directives.get("default-src");
+  const sourceName = scriptSrc ? "script-src" : "default-src";
+  const tokens = scriptSrc ?? defaultSrc ?? [];
+
+  if (!hasSelf(tokens)) {
+    errors.push(`${file}: CSP ${sourceName} lacks 'self'`);
+  }
+  for (const token of tokens) {
+    const reason = forbiddenScriptSrcReason(token);
+    if (reason) {
+      errors.push(`${file}: CSP ${sourceName} contains forbidden source ${reason}`);
+    }
+  }
+}
+
 function assertHeadersCsp(root, errors) {
   const headersFiles = walk(root).filter((file) => path.basename(file) === "_headers");
   if (headersFiles.length === 0) {
@@ -212,9 +257,7 @@ function assertHeadersCsp(root, errors) {
       continue;
     }
     for (const line of cspLines) {
-      if (!line.includes("script-src 'self'")) {
-        errors.push(`${rel}: CSP lacks script-src 'self'`);
-      }
+      lintCspHeader(rel, line, errors);
     }
   }
 }
