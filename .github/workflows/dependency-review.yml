@@ -1,0 +1,67 @@
+name: dependency-review
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "development-(integration)"
+      - "staging-(pre-production)"
+      - "Production-(Live-branch)"
+  push:
+    branches:
+      - main
+      - "development-(integration)"
+      - "staging-(pre-production)"
+      - "Production-(Live-branch)"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: dependency-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # actions/dependency-review-action only consumes a PR diff via the API.
+      - name: Dependency review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
+
+      # The action has no deny-git/URL-sources input; grep the lockfile diff.
+      - name: Deny git and HTTP tarball dependency sources
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          range=""
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            git fetch --no-tags origin "${BASE_SHA}"
+            range="${BASE_SHA}...${SHA}"
+          elif [[ -n "${BEFORE}" && "${BEFORE}" != "0000000000000000000000000000000000000000" ]]; then
+            range="${BEFORE}...${SHA}"
+          fi
+          if [[ -n "${range}" ]]; then
+            diff="$(git diff "${range}" -- pnpm-lock.yaml || true)"
+          else
+            diff="$(cat pnpm-lock.yaml)"
+          fi
+          if printf '%s\n' "${diff}" | grep -E '^\+' | grep -Ev '^\+\+\+' | grep -E 'git\+|tarball: http'; then
+            echo "::error::Forbidden git+ or tarball: http dependency sources in the lockfile diff"
+            exit 1
+          fi
+          echo "No git+ or tarball: http sources in lockfile diff"
