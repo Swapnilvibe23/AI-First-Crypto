@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { InfoTooltip } from "@/components/info-tooltip";
 
 // ─── Exchange data ─────────────────────────────────────────────────────────────
-// Replace the `href` values below with your real affiliate tracking URLs.
+// Signup hrefs are official pages with no tracking. Affiliate links wait on #28.
 
 const LAST_VERIFIED = "October 16, 2026";
 
@@ -80,7 +80,7 @@ const EXCHANGES: Exchange[] = [
     ],
     badge: "Best for Beginners",
     badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    href: "https://coinbase.com/join",
+    href: "https://www.coinbase.com/signup",
   },
   {
     name: "Binance",
@@ -89,9 +89,9 @@ const EXCHANGES: Exchange[] = [
     bestFor: "Active traders outside the US",
     feeScheduleHref: "https://www.binance.com/en/fee/schedule",
     availability: {
-      text: "Binance.com is not available to U.S. residents. Binance.US is a separate platform.",
-      sourceHref: "https://support.binance.us/hc/en-us/articles/360058996013-Binance-US-Welcomes-You",
-      sourceLabel: "Binance.US notice",
+      text: "Binance.com is a separate platform from Binance.US, which was created to serve U.S. customers.",
+      sourceHref: "https://support.binance.us/en/articles/10752232-how-to-access-an-old-binance-com-account-and-transfer-crypto-to-binance-us",
+      sourceLabel: "Binance.US help",
     },
     highlights: [
       {
@@ -100,9 +100,9 @@ const EXCHANGES: Exchange[] = [
         sourceLabel: "Binance Earn",
       },
       {
-        text: "Official Binance announcements list the United States among restricted locations for trading eligibility.",
-        sourceHref: "https://www.binance.com/en/square/post/317792306647042",
-        sourceLabel: "Binance announcement",
+        text: "Binance.US says it is a separate and independent company from Binance.com (Global).",
+        sourceHref: "https://support.binance.us/en/articles/10752232-how-to-access-an-old-binance-com-account-and-transfer-crypto-to-binance-us",
+        sourceLabel: "Binance.US help",
       },
     ],
     badge: "Global platform",
@@ -149,8 +149,8 @@ const EXCHANGES: Exchange[] = [
     feeScheduleHref: "https://www.gemini.com/fees",
     availability: {
       text: "Available in all 50 U.S. states.",
-      sourceHref: "https://support.gemini.com/hc/en-us/articles/204072799-Which-countries-and-U-S-states-does-Gemini-support",
-      sourceLabel: "Availability help",
+      sourceHref: "https://www.gemini.com/americas-exchange",
+      sourceLabel: "Gemini Americas",
     },
     highlights: [
       {
@@ -166,14 +166,14 @@ const EXCHANGES: Exchange[] = [
     ],
     badge: "NYDFS-licensed",
     badgeColor: "bg-sky-500/20 text-sky-400 border-sky-500/30",
-    href: "https://www.gemini.com/share/",
+    href: "https://www.gemini.com/register",
   },
   {
     name: "Bybit",
     tagline: "Perpetual futures and copy trading (U.S. restricted)",
     emoji: "🟠",
     bestFor: "Experienced traders & derivatives",
-    feeScheduleHref: "https://www.bybit.com/en/announcement-info/fee-rate/",
+    feeScheduleHref: "https://www.bybit.com/en/help-center/article/Trading-Fee-Structure",
     availability: {
       text: "Not available to users in the United States.",
       sourceHref: "https://www.bybit.com/en/help-center/article/Service-Restricted-Countries",
@@ -187,7 +187,7 @@ const EXCHANGES: Exchange[] = [
       },
       {
         text: "Bybit publishes a volume-tiered futures fee schedule; rates vary by product and VIP tier.",
-        sourceHref: "https://www.bybit.com/en/announcement-info/fee-rate/",
+        sourceHref: "https://www.bybit.com/en/help-center/article/Trading-Fee-Structure",
         sourceLabel: "Fee schedule",
       },
     ],
@@ -227,9 +227,9 @@ const COMPARE_FEATURES: { feature: string; values: CompareCell[] }[] = [
     feature: "U.S. residents",
     values: [
       { text: "Yes", sourceHref: "https://help.coinbase.com/en/coinbase/getting-started/getting-started-with-coinbase/create-a-coinbase-account", sourceLabel: "Source" },
-      { text: "No (Binance.com)", sourceHref: "https://www.binance.com/en/square/post/317792306647042", sourceLabel: "Source" },
+      { text: "No (Binance.com)", sourceHref: "https://support.binance.us/en/articles/10752232-how-to-access-an-old-binance-com-account-and-transfer-crypto-to-binance-us", sourceLabel: "Source" },
       { text: "Yes, except NY & ME", sourceHref: "https://support.kraken.com/articles/quick-start-for-clients-in-the-united-states", sourceLabel: "Source" },
-      { text: "Yes, all 50 states", sourceHref: "https://support.gemini.com/hc/en-us/articles/204072799-Which-countries-and-U-S-states-does-Gemini-support", sourceLabel: "Source" },
+      { text: "Yes, all 50 states", sourceHref: "https://www.gemini.com/americas-exchange", sourceLabel: "Source" },
       { text: "No", sourceHref: "https://www.bybit.com/en/help-center/article/Service-Restricted-Countries", sourceLabel: "Source" },
       { text: "Limited (OKX INC.)", sourceHref: "https://www.okx.com/en-us/help/us-risk-and-compliance-disclosures", sourceLabel: "Source" },
     ],
@@ -238,7 +238,7 @@ const COMPARE_FEATURES: { feature: string; values: CompareCell[] }[] = [
     feature: "Licensing / listing",
     values: [
       { text: "Nasdaq: COIN", sourceHref: "https://investor.coinbase.com/home/", sourceLabel: "Source" },
-      { text: "U.S. restricted", sourceHref: "https://www.binance.com/en/square/post/317792306647042", sourceLabel: "Source" },
+      { text: "Separate from Binance.US", sourceHref: "https://support.binance.us/en/articles/10752232-how-to-access-an-old-binance-com-account-and-transfer-crypto-to-binance-us", sourceLabel: "Source" },
       { text: "Founded 2011", sourceHref: "https://blog.kraken.com/news/13-years-ago-the-kraken-emerged", sourceLabel: "Source" },
       { text: "NYDFS + SOC 2 Type 2", sourceHref: "https://www.gemini.com/trust-center", sourceLabel: "Source" },
       { text: "See restricted-country list", sourceHref: "https://www.bybit.com/en/help-center/article/Service-Restricted-Countries", sourceLabel: "Source" },
@@ -252,7 +252,7 @@ const COMPARE_FEATURES: { feature: string; values: CompareCell[] }[] = [
       { text: "View fees", sourceHref: "https://www.binance.com/en/fee/schedule", sourceLabel: "Binance" },
       { text: "View fees", sourceHref: "https://www.kraken.com/features/fee-schedule", sourceLabel: "Kraken" },
       { text: "View fees", sourceHref: "https://www.gemini.com/fees", sourceLabel: "Gemini" },
-      { text: "View fees", sourceHref: "https://www.bybit.com/en/announcement-info/fee-rate/", sourceLabel: "Bybit" },
+      { text: "View fees", sourceHref: "https://www.bybit.com/en/help-center/article/Trading-Fee-Structure", sourceLabel: "Bybit" },
       { text: "View fees", sourceHref: "https://www.okx.com/fees", sourceLabel: "OKX" },
     ],
   },
@@ -272,6 +272,11 @@ export default function Exchanges() {
         </h1>
         <p className="text-lg text-muted-foreground mt-2 max-w-2xl">
           Not all exchanges are the same. We compare the biggest platforms so you can find the right one for your needs — beginner-friendly, low fees, or full DeFi access.
+        </p>
+        <p className="text-[11px] text-muted-foreground mt-4 max-w-2xl leading-relaxed">
+          <strong className="text-muted-foreground/80">Disclaimer:</strong>{" "}
+          Educational content, not financial advice. We may earn a commission from some links in the future; we'll mark them when we do.{" "}
+          <Link href="/disclaimer" className="underline hover:text-foreground">See our disclaimer</Link>.
         </p>
         <p className="text-sm font-medium mt-4 flex items-center gap-2">
           <CalendarCheck className="h-4 w-4 text-primary" />
@@ -376,7 +381,7 @@ export default function Exchanges() {
 
               {/* CTA */}
               <div className="p-5 pt-0">
-                <a href={ex.href} target="_blank" rel="noopener noreferrer sponsored">
+                <a href={ex.href} target="_blank" rel="noopener noreferrer">
                   <Button className="w-full rounded-full gap-2 font-bold">
                     Get started on {ex.name}
                     <ExternalLink className="h-3.5 w-3.5" />
@@ -440,12 +445,12 @@ export default function Exchanges() {
           Already comfortable? Try our <Link href="/dca" className="text-primary underline">DCA Calculator</Link> to plan your strategy before buying.
         </p>
         <div className="flex flex-wrap gap-3 justify-center">
-          <a href="https://coinbase.com/join" target="_blank" rel="noopener noreferrer sponsored">
+          <a href="https://www.coinbase.com/signup" target="_blank" rel="noopener noreferrer">
             <Button size="lg" className="rounded-full gap-2">
               🔵 Start on Coinbase <ExternalLink className="h-4 w-4" />
             </Button>
           </a>
-          <a href="https://www.binance.com/en/register" target="_blank" rel="noopener noreferrer sponsored">
+          <a href="https://www.binance.com/en/register" target="_blank" rel="noopener noreferrer">
             <Button size="lg" variant="secondary" className="rounded-full gap-2">
               🟡 Start on Binance <ExternalLink className="h-4 w-4" />
             </Button>
