@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useGetCoins } from "@workspace/api-client-react";
+import { useGetCoins, type GetCoinsOrder } from "@workspace/api-client-react";
 import { useSeoMeta } from "@/hooks/use-seo-meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -162,7 +162,9 @@ export default function Rates() {
   const [view, setView] = useState<ViewMode>("table");
 
   // For client-side sorts, always fetch by market cap so we have the full set
-  const apiOrder = isClientSort(order) ? "market_cap_desc" : order;
+  const apiOrder: GetCoinsOrder = isClientSort(order)
+    ? "market_cap_desc"
+    : (order as GetCoinsOrder);
 
   const { data: coins, isLoading } = useGetCoins({
     page,
