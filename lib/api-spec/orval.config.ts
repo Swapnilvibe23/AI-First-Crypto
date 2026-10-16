@@ -26,12 +26,19 @@ export default defineConfig({
       target: "generated",
       client: "react-query",
       mode: "split",
+      indexFiles: false,
       baseUrl: "/api",
       clean: true,
       prettier: true,
       override: {
         fetch: {
           includeHttpResponseReturnType: false,
+        },
+        query: {
+          // Keep generated hooks on TanStack Query v5 (catalog). Orval 8.22+
+          // cannot infer the version from this workspace layout and would
+          // otherwise emit v4 option types.
+          version: 5,
         },
         mutator: {
           path: path.resolve(apiClientReactSrc, "custom-fetch.ts"),
@@ -53,10 +60,13 @@ export default defineConfig({
       target: "generated",
       schemas: { path: "generated/types", type: "typescript" },
       mode: "split",
+      indexFiles: false,
       clean: true,
       prettier: true,
       override: {
         zod: {
+          // Catalog stays on Zod 3; do not emit Zod 4 APIs such as z.int().
+          version: 3,
           coerce: {
             query: ['boolean', 'number', 'string'],
             param: ['boolean', 'number', 'string'],
