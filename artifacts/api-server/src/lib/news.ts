@@ -12,8 +12,8 @@
  * CybeDefend owasp-2025-a01: feed hosts are fixed and response size is capped.
  */
 
-import { LIMITS, clampInt, safeHttpUrl } from "./sanitize.ts";
-import { fetchAllowlisted } from "./upstream.ts";
+import { LIMITS, clampInt, safeHttpUrl } from "./sanitize";
+import { fetchAllowlisted } from "./upstream";
 
 export interface NewsItem {
   title: string;
@@ -62,7 +62,7 @@ function scoreSentiment(text: string): "bullish" | "bearish" | "neutral" {
   return "neutral";
 }
 
-export function decodeEntities(text: string): string {
+function decodeEntities(text: string): string {
   return text
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
