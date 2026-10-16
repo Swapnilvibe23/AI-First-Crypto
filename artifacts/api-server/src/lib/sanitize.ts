@@ -93,9 +93,8 @@ function stripTags(value: string): string {
     .replace(/<[^>]*>/g, " ");
 }
 
-function decodeEntities(value: string): string {
+export function decodeEntities(value: string): string {
   return value
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
@@ -112,5 +111,6 @@ function decodeEntities(value: string): string {
       const point = Number.parseInt(code, 16);
       if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
       return String.fromCodePoint(point);
-    });
+    })
+    .replace(/&amp;/g, "&");
 }
