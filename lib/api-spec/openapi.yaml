@@ -446,6 +446,9 @@ components:
         sentiment:
           type: string
           enum: [bullish, bearish, neutral]
+        imageUrl:
+          type: string
+          description: Optional article image URL from the RSS feed
       required:
         - title
         - link
