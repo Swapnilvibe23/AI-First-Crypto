@@ -144,6 +144,7 @@ overrides:
   "fast-copy": "4.1.0"
   "fast-uri": "3.1.8"
   "nanoid@3": "3.3.18"
-  # GHSA-rj75-hqrm-r3gf / CVE-2026-104844: quadratic flat-selector parsing
-  "postcss-selector-parser": ">=7.1.6"
+  # GHSA-rj75-hqrm-r3gf: quadratic flat-selector parsing
+  # https://github.com/advisories/GHSA-rj75-hqrm-r3gf
+  "postcss-selector-parser": "^7.1.6"
 
