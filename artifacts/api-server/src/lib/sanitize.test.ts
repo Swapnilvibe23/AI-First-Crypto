@@ -23,6 +23,11 @@ describe("htmlToPlainText", () => {
     assert.equal(htmlToPlainText("&amp;lt;script&amp;gt;"), "&lt;script&gt;");
   });
 
+  it("decodes a numeric ampersand only once", () => {
+    assert.equal(decodeEntities("&#38;amp;"), "&amp;");
+    assert.notEqual(decodeEntities("&#38;amp;"), "&");
+  });
+
   it("still decodes ordinary named and numeric entities", () => {
     assert.equal(decodeEntities("A &amp; B &quot;C&quot; &#39;D&#39; &apos;E&apos;"), `A & B "C" 'D' 'E'`);
     assert.equal(htmlToPlainText("A &amp; B &quot;C&quot; &#39;D&#39; &apos;E&apos;"), `A & B "C" 'D' 'E'`);

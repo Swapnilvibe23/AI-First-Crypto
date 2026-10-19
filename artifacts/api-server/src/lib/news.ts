@@ -12,6 +12,7 @@
  * CybeDefend owasp-2025-a01: feed hosts are fixed and response size is capped.
  */
 
+import { decodeEntities } from "./news-decode";
 import { LIMITS, clampInt, safeHttpUrl } from "./sanitize";
 import { fetchAllowlisted } from "./upstream";
 
@@ -60,23 +61,6 @@ function scoreSentiment(text: string): "bullish" | "bearish" | "neutral" {
   if (bullish > bearish) return "bullish";
   if (bearish > bullish) return "bearish";
   return "neutral";
-}
-
-function decodeEntities(text: string): string {
-  return text
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, "/")
-    .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, code: string) => {
-      const point = Number(code);
-      if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
-      return String.fromCodePoint(point);
-    })
-    .replace(/&amp;/g, "&");
 }
 
 function extractText(xml: string, tag: string): string {

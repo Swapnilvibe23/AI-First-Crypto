@@ -93,24 +93,28 @@ function stripTags(value: string): string {
     .replace(/<[^>]*>/g, " ");
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  "&apos;": "'",
+};
+
+function codePointFromEntity(code: string, radix: number): string {
+  const point = radix === 10 ? Number(code) : Number.parseInt(code, 16);
+  if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
+  return String.fromCodePoint(point);
+}
+
 export function decodeEntities(value: string): string {
-  return value
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x27;/gi, "'")
-    .replace(/&#x2F;/gi, "/")
-    .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_match, code: string) => {
-      const point = Number(code);
-      if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
-      return String.fromCodePoint(point);
-    })
-    .replace(/&#x([0-9a-f]+);/gi, (_match, code: string) => {
-      const point = Number.parseInt(code, 16);
-      if (!Number.isInteger(point) || point < 0 || point > 0x10ffff) return "";
-      return String.fromCodePoint(point);
-    })
-    .replace(/&amp;/g, "&");
+  // One pass: replacements are not re-scanned, so &#38;amp; stays &amp;.
+  return value.replace(
+    /&(?:amp|lt|gt|quot|apos|#(\d+)|#[xX]([0-9a-fA-F]+));/g,
+    (match, decimal?: string, hex?: string) => {
+      if (decimal !== undefined) return codePointFromEntity(decimal, 10);
+      if (hex !== undefined) return codePointFromEntity(hex, 16);
+      return NAMED_ENTITIES[match] ?? match;
+    },
+  );
 }
