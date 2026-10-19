@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { htmlToPlainText, isCoinId, safeHttpUrl } from "./sanitize.ts";
+import { decodeEntities, htmlToPlainText, isCoinId, safeHttpUrl } from "./sanitize.ts";
 import { isBlockedHostname, nextHttpsUrl, readCappedBody } from "./upstream.ts";
 
 describe("htmlToPlainText", () => {
@@ -16,6 +16,28 @@ describe("htmlToPlainText", () => {
     const text = htmlToPlainText("&#60;img src=x onerror=alert(1)&#62;");
     assert.equal(text.includes("<"), false);
     assert.equal(text.includes(">"), false);
+  });
+
+  it("decodes double-escaped markup only once", () => {
+    assert.equal(decodeEntities("&amp;lt;script&amp;gt;"), "&lt;script&gt;");
+    assert.equal(htmlToPlainText("&amp;lt;script&amp;gt;"), "&lt;script&gt;");
+  });
+
+  it("decodes a numeric ampersand only once", () => {
+    assert.equal(decodeEntities("&#38;amp;"), "&amp;");
+    assert.notEqual(decodeEntities("&#38;amp;"), "&");
+  });
+
+  it("still decodes ordinary named and numeric entities", () => {
+    assert.equal(decodeEntities("A &amp; B &quot;C&quot; &#39;D&#39; &apos;E&apos;"), `A & B "C" 'D' 'E'`);
+    assert.equal(htmlToPlainText("A &amp; B &quot;C&quot; &#39;D&#39; &apos;E&apos;"), `A & B "C" 'D' 'E'`);
+  });
+
+  it("strips tags that appear only after a single entity decode", () => {
+    const text = htmlToPlainText("&lt;script&gt;alert(1)&lt;/script&gt;Hello");
+    assert.equal(text.includes("<"), false);
+    assert.equal(text.includes("alert"), false);
+    assert.match(text, /Hello/);
   });
 });
 
