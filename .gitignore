@@ -43,11 +43,12 @@ Thumbs.db
 
 # Environment files — keep local secrets out of git
 .env
+.env.example
 .env.*
 
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Local caches
 .cache/
 .local/
