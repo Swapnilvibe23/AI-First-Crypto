@@ -11,7 +11,7 @@
     "test": "node --experimental-strip-types --test src/lib/sanitize.test.ts src/lib/ingest.test.ts src/lib/news.test.ts"
   },
   "dependencies": {
-    "@netlify/blobs": "^10.7.13",
+    "@netlify/blobs": "^11.1.6",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "cookie-parser": "^1.4.7",
