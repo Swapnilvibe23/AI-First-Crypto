@@ -152,8 +152,8 @@ importers:
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.2(react@19.1.0))
       '@netlify/functions':
-        specifier: ^5.3.0
-        version: 5.3.0
+        specifier: ^6.0.3
+        version: 6.0.3
       '@radix-ui/react-accordion':
         specifier: ^1.2.4
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -826,9 +826,9 @@ packages:
     resolution: {integrity: sha512-ICAsnvbJW9Dv9PGfmJGdjMBsX6uXdJxrA76QE3l3rnGKL5ZcyaA2cJZXacdEmE2ZmtkiVhEJogM15a9nK/ZxDw==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@netlify/functions@5.3.0':
-    resolution: {integrity: sha512-FP+xCoZMkMOUsKa4UdG/oiK/2md1/TxuXvqqieaMVMgDbFFMaHI8h0oHCViUY73kPbKV6HyzayaSXGYXKpBSoQ==}
-    engines: {node: '>=18.0.0'}
+  '@netlify/functions@6.0.3':
+    resolution: {integrity: sha512-6KHpsR2L4VQL2gMm3VvG46xBNTga/SbOziluInR0++gkvOuQ/T2pxsxf2Rys5wOikpNY3Zv1IoE52/pWBJjZ9Q==}
+    engines: {node: '>=22.12.0'}
 
   '@netlify/otel@6.0.6':
     resolution: {integrity: sha512-KpiJ8c4V4GvgpQH5E1axg43kYdIN9saToLbzvgrDzPun4XMGwz/tLfoIkwJ4jwrVmbPj35+8+dj3gkggQAtjtg==}
@@ -838,9 +838,9 @@ packages:
     resolution: {integrity: sha512-cW8weDvsKV7zfia2m5EcBy6KILGoPD+eYZ3qWNGnIo05DGF28goPES0xKSDkNYgAF/2rRSIhie2qcBhbGVgSRg==}
     engines: {node: ^18.14.0 || >=20}
 
-  '@netlify/types@2.8.0':
-    resolution: {integrity: sha512-8/g0Pt6y6wXj5Ia5eeYLiXhRfWeqZXGXpGFeCiiQdUOem+FPtXdA4+YdGxqzWc7D0AvptKSO01KGeeVWHSu8Kg==}
-    engines: {node: ^18.14.0 || >=20}
+  '@netlify/types@3.3.0':
+    resolution: {integrity: sha512-u/uh0vOFslJsTcG8nnynAKnTpVIakXbv3mkBG9DTqKZrDEzmfLKDZ3I7evHA3/CYUmNB24pNrzlHj2nIsqEwzg==}
+    engines: {node: '>=22.12.0'}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -895,12 +895,14 @@ packages:
   '@opentelemetry/sdk-trace-base@2.9.0':
     resolution: {integrity: sha512-cp9zmTl62R8PJrpvFcmc8N2JQU/xfa0S+61q511Nji+QxCfZ8Ifvg7H27G8cANe4crg4RTrWsVvanHiXjSp6ag==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.9.0':
     resolution: {integrity: sha512-ec9a7ps37huy5itYk0MalaZdSLlM6AXWp/FhtEjgMpp5leEGojBDvAl/UWttQnkMZOvFHKzRESn8TD3yKTF5nQ==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -3659,9 +3661,9 @@ snapshots:
       parse-gitignore: 2.0.0
       semver: 7.8.5
 
-  '@netlify/functions@5.3.0':
+  '@netlify/functions@6.0.3':
     dependencies:
-      '@netlify/types': 2.8.0
+      '@netlify/types': 3.3.0
 
   '@netlify/otel@6.0.6':
     dependencies:
@@ -3675,7 +3677,7 @@ snapshots:
 
   '@netlify/runtime-utils@2.3.0': {}
 
-  '@netlify/types@2.8.0': {}
+  '@netlify/types@3.3.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
